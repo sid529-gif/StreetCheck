@@ -61,6 +61,7 @@
 **Question**: When a hazard report is submitted, how much does it adjust the affected segment's dimension score?
 
 **Answer**: Each hazard type maps to a dimension and a severity multiplier:
+
 - `pothole` → surface_quality −0.2
 - `broken_streetlight` → lighting_score −0.25
 - `waterlogging` → flood_risk +0.3 (adds risk)

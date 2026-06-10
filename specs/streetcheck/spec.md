@@ -10,7 +10,7 @@
 
 ---
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 — Route Safety Comparison (Priority: P1) 🎯 MVP
 
@@ -96,7 +96,7 @@ A floating chat bubble on the map allows users to ask natural language safety qu
 
 ---
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 ### Functional Requirements
 
@@ -121,7 +121,7 @@ A floating chat bubble on the map allows users to ask natural language safety qu
 - **DataRefreshLog**: Audit trail for automated data pulls. Key attributes: `source` (osm/telangana/hydraa/morth), `fetched_at`, `segments_updated`, `status`, `error_message`
 - **Route**: A computed route between two points. Not persisted — computed on-demand and returned in API response. Attributes: `origin`, `destination`, `waypoints[]`, `total_distance_m`, `estimated_time_s`, `route_safety_score`, `segment_ids[]`
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 

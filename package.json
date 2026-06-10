@@ -1,0 +1,68 @@
+{
+  "name": "streetcheck",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Civic road safety intelligence platform for Hyderabad",
+  "license": "AGPL-3.0-or-later",
+  "workspaces": [
+    "client",
+    "server",
+    "shared"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "concurrently -n client,server -c cyan,green \"npm run dev -w client\" \"npm run dev -w server\"",
+    "dev:client": "npm run dev -w client",
+    "dev:server": "npm run dev -w server",
+    "build": "npm run build -w shared && npm run build -w client && npm run build -w server",
+    "build:client": "npm run build -w client",
+    "build:server": "npm run build -w server",
+    "lint": "npm run lint -w client && npm run lint -w server && npm run lint -w shared",
+    "lint:fix": "npm run lint:fix -w client && npm run lint:fix -w server && npm run lint:fix -w shared",
+    "format": "prettier --write \"**/*.{ts,tsx,js,json,md,css}\" --ignore-path .prettierignore",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,json,md,css}\" --ignore-path .prettierignore",
+    "type-check": "npm run type-check -w shared && npm run type-check -w server && npm run type-check -w client",
+    "test": "npm run test -w shared --if-present && npm run test -w server --if-present && npm run test -w client --if-present",
+    "coverage": "npm run coverage -w server --if-present && npm run coverage -w client --if-present",
+    "audit": "npm audit --workspaces --include=prod --include=dev",
+    "secrets:scan": "gitleaks detect --source . --no-git",
+    "knip": "knip",
+    "changelog": "git-cliff -o CHANGELOG.md",
+    "changelog:preview": "git-cliff --unreleased",
+    "prisma:generate": "prisma generate --schema prisma/schema.prisma",
+    "prisma:push": "prisma db push --schema prisma/schema.prisma",
+    "prisma:migrate": "prisma migrate dev --schema prisma/schema.prisma",
+    "prisma:studio": "prisma studio --schema prisma/schema.prisma",
+    "seed:overpass": "npx tsx server/src/scripts/seedOverpass.ts",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@eslint/js": "^9.21.0",
+    "@typescript-eslint/eslint-plugin": "^8.24.1",
+    "@typescript-eslint/parser": "^8.24.1",
+    "concurrently": "^9.1.2",
+    "eslint": "^9.21.0",
+    "eslint-plugin-react": "^7.37.4",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "git-cliff": "^2.8.0",
+    "husky": "^9.1.7",
+    "knip": "^5.45.0",
+    "lint-staged": "^15.4.3",
+    "prettier": "^3.4.2",
+    "prisma": "^6.5.0",
+    "tsx": "^4.19.3",
+    "typescript": "^5.7.3"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{js,json,md,css}": [
+      "prettier --write"
+    ]
+  }
+}

@@ -20,10 +20,10 @@ Conversational safety assistant. Accepts a natural language question about road 
 }
 ```
 
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `message` | `string` | ✅ | User's natural language question. Max 500 chars. |
-| `contextSegmentIds` | `string[]` | ❌ | Optional: pre-specify segments to include in context (e.g., segments currently visible in the viewport). Server also adds geocoded segments from the message. Max 20 total. |
+| Field               | Type       | Required | Description                                                                                                                                                                 |
+| ------------------- | ---------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `message`           | `string`   | ✅       | User's natural language question. Max 500 chars.                                                                                                                            |
+| `contextSegmentIds` | `string[]` | ❌       | Optional: pre-specify segments to include in context (e.g., segments currently visible in the viewport). Server also adds geocoded segments from the message. Max 20 total. |
 
 ### Claude System Prompt Template
 
@@ -57,11 +57,11 @@ CURRENT TIME: {currentTime}
 
 ### Error Responses
 
-| Status | Code | Description |
-|---|---|---|
-| `400 Bad Request` | `MESSAGE_TOO_LONG` | Message exceeds 500 characters |
-| `503 Service Unavailable` | `AI_UNAVAILABLE` | Claude API error or timeout |
-| `400 Bad Request` | `TOPIC_OUT_OF_SCOPE` | Detected sensitive topic (crime etc.) — pre-filter before Claude call |
+| Status                    | Code                 | Description                                                           |
+| ------------------------- | -------------------- | --------------------------------------------------------------------- |
+| `400 Bad Request`         | `MESSAGE_TOO_LONG`   | Message exceeds 500 characters                                        |
+| `503 Service Unavailable` | `AI_UNAVAILABLE`     | Claude API error or timeout                                           |
+| `400 Bad Request`         | `TOPIC_OUT_OF_SCOPE` | Detected sensitive topic (crime etc.) — pre-filter before Claude call |
 
 ---
 
@@ -80,7 +80,7 @@ Generate a 2-line natural language safety summary for a specific road segment. C
 ### Claude Prompt Template
 
 ```
-Generate a 2-sentence road safety summary for this segment. 
+Generate a 2-sentence road safety summary for this segment.
 Be specific about the main risk and any active citizen reports.
 Do not mention crime or policing.
 Format: Plain text, no markdown, no bullet points.
@@ -106,10 +106,10 @@ Last Updated: {lastUpdated}
 
 ### Error Responses
 
-| Status | Code | Description |
-|---|---|---|
-| `404 Not Found` | `SEGMENT_NOT_FOUND` | Segment ID does not exist |
-| `503 Service Unavailable` | `AI_UNAVAILABLE` | Claude API error |
+| Status                    | Code                | Description               |
+| ------------------------- | ------------------- | ------------------------- |
+| `404 Not Found`           | `SEGMENT_NOT_FOUND` | Segment ID does not exist |
+| `503 Service Unavailable` | `AI_UNAVAILABLE`    | Claude API error          |
 
 ---
 
@@ -155,16 +155,16 @@ Generate a comparative explanation of why the safest route is safer than the fas
 ### Claude Prompt Template
 
 ```
-Compare these two routes from a road safety perspective. Explain in 2-3 sentences 
+Compare these two routes from a road safety perspective. Explain in 2-3 sentences
 why the safer route scores higher. Be specific — mention actual hazards, not just scores.
 Do not mention crime. Do not use markdown.
 
-Fastest Route (Score: {fastScore}/100, {fastTime}): 
+Fastest Route (Score: {fastScore}/100, {fastTime}):
 - {fastRed} red segments, {fastAmber} amber, {fastReports} active hazard reports
 - Worst segment: {worstSegmentName} ({worstSegmentIssue})
 
 Safest Route (Score: {safeScore}/100, {safeTime}):
-- {safeRed} red segments, {safeAmber} amber, {safeReports} active hazard reports  
+- {safeRed} red segments, {safeAmber} amber, {safeReports} active hazard reports
 - Best feature: {bestSegmentName} ({bestSegmentStrength})
 
 Context: Hyderabad, current time {currentTime}, weather: {weatherContext}
@@ -180,7 +180,7 @@ Context: Hyderabad, current time {currentTime}, weather: {weatherContext}
 
 ### Error Responses
 
-| Status | Code | Description |
-|---|---|---|
-| `400 Bad Request` | `MISSING_ROUTES` | Both route objects must be provided |
-| `503 Service Unavailable` | `AI_UNAVAILABLE` | Claude API error |
+| Status                    | Code             | Description                         |
+| ------------------------- | ---------------- | ----------------------------------- |
+| `400 Bad Request`         | `MISSING_ROUTES` | Both route objects must be provided |
+| `503 Service Unavailable` | `AI_UNAVAILABLE` | Claude API error                    |

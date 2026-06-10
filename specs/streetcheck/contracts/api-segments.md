@@ -12,10 +12,10 @@ Fetch road segments within a map viewport bounding box. Returns a GeoJSON Featur
 
 ### Query Parameters
 
-| Parameter | Type | Required | Description |
-|---|---|---|---|
-| `bbox` | `string` | ✅ | Bounding box: `minLng,minLat,maxLng,maxLat` (comma-separated WGS84 coords) |
-| `band` | `"green" \| "amber" \| "red"` | ❌ | Filter by safety band. Returns all bands if omitted. |
+| Parameter | Type                          | Required | Description                                                                |
+| --------- | ----------------------------- | -------- | -------------------------------------------------------------------------- |
+| `bbox`    | `string`                      | ✅       | Bounding box: `minLng,minLat,maxLng,maxLat` (comma-separated WGS84 coords) |
+| `band`    | `"green" \| "amber" \| "red"` | ❌       | Filter by safety band. Returns all bands if omitted.                       |
 
 ### Example Request
 
@@ -33,7 +33,10 @@ GET /api/segments?bbox=78.36,17.38,78.42,17.48
       "type": "Feature",
       "geometry": {
         "type": "LineString",
-        "coordinates": [[78.385, 17.432], [78.387, 17.435]]
+        "coordinates": [
+          [78.385, 17.432],
+          [78.387, 17.435]
+        ]
       },
       "properties": {
         "segmentId": "hyd_12345678",
@@ -41,9 +44,9 @@ GET /api/segments?bbox=78.36,17.38,78.42,17.48
         "name": "Road No. 12, Banjara Hills",
         "lightingScore": 0.72,
         "accidentRate": 0.18,
-        "floodRisk": 0.40,
+        "floodRisk": 0.4,
         "surfaceQuality": 0.85,
-        "walkabilityScore": 0.60,
+        "walkabilityScore": 0.6,
         "safetyScore": 0.682,
         "safetyBand": "amber",
         "activeReportCount": 2,
@@ -64,10 +67,10 @@ GET /api/segments?bbox=78.36,17.38,78.42,17.48
 
 ### Error Responses
 
-| Status | Code | Description |
-|---|---|---|
-| `400 Bad Request` | `INVALID_BBOX` | `bbox` parameter missing, malformed, or outside Hyderabad bounds |
-| `500 Internal Server Error` | `SPATIAL_QUERY_FAILED` | PostGIS query error |
+| Status                      | Code                   | Description                                                      |
+| --------------------------- | ---------------------- | ---------------------------------------------------------------- |
+| `400 Bad Request`           | `INVALID_BBOX`         | `bbox` parameter missing, malformed, or outside Hyderabad bounds |
+| `500 Internal Server Error` | `SPATIAL_QUERY_FAILED` | PostGIS query error                                              |
 
 ---
 
@@ -77,9 +80,9 @@ Fetch a single segment's full score breakdown plus its active citizen reports.
 
 ### Path Parameters
 
-| Parameter | Type | Required | Description |
-|---|---|---|---|
-| `segmentId` | `string` | ✅ | Segment ID (format: `hyd_{osm_way_id}`) |
+| Parameter   | Type     | Required | Description                             |
+| ----------- | -------- | -------- | --------------------------------------- |
+| `segmentId` | `string` | ✅       | Segment ID (format: `hyd_{osm_way_id}`) |
 
 ### Example Request
 
@@ -96,17 +99,20 @@ GET /api/segments/hyd_12345678
   "name": "Road No. 12, Banjara Hills",
   "geometry": {
     "type": "LineString",
-    "coordinates": [[78.385, 17.432], [78.387, 17.435]]
+    "coordinates": [
+      [78.385, 17.432],
+      [78.387, 17.435]
+    ]
   },
   "scores": {
     "overall": 68,
     "band": "amber",
     "breakdown": {
-      "lighting": { "score": 72, "weight": 0.30, "source": "osm" },
+      "lighting": { "score": 72, "weight": 0.3, "source": "osm" },
       "accident": { "score": 82, "weight": 0.25, "source": "morth_2024" },
-      "flood":    { "score": 60, "weight": 0.20, "source": "hydraa_2026" },
-      "surface":  { "score": 85, "weight": 0.15, "source": "osm" },
-      "walkability": { "score": 60, "weight": 0.10, "source": "osm" }
+      "flood": { "score": 60, "weight": 0.2, "source": "hydraa_2026" },
+      "surface": { "score": 85, "weight": 0.15, "source": "osm" },
+      "walkability": { "score": 60, "weight": 0.1, "source": "osm" }
     }
   },
   "activeReports": [
@@ -127,7 +133,7 @@ GET /api/segments/hyd_12345678
 
 ### Error Responses
 
-| Status | Code | Description |
-|---|---|---|
-| `404 Not Found` | `SEGMENT_NOT_FOUND` | No segment with this ID exists |
-| `400 Bad Request` | `INVALID_SEGMENT_ID` | ID format is invalid |
+| Status            | Code                 | Description                    |
+| ----------------- | -------------------- | ------------------------------ |
+| `404 Not Found`   | `SEGMENT_NOT_FOUND`  | No segment with this ID exists |
+| `400 Bad Request` | `INVALID_SEGMENT_ID` | ID format is invalid           |

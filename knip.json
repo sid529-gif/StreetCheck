@@ -1,0 +1,39 @@
+{
+  "$schema": "https://unpkg.com/knip@latest/schema.json",
+  "workspaces": {
+    ".": {
+      "entry": ["eslint.config.js", "client/vite.config.ts"],
+      "ignoreDependencies": [
+        "concurrently",
+        "husky",
+        "lint-staged",
+        "git-cliff",
+        "gitleaks",
+        "prisma"
+      ]
+    },
+    "client": {
+      "entry": ["src/main.tsx", "vite.config.ts", "tailwind.config.js"],
+      "ignoreDependencies": ["@types/react", "@types/react-dom"]
+    },
+    "server": {
+      "entry": ["src/index.ts"],
+      "ignoreDependencies": [
+        "@types/express",
+        "@types/cors",
+        "@types/multer",
+        "@types/node-cron"
+      ]
+    },
+    "shared": {
+      "entry": ["src/index.ts"]
+    }
+  },
+  "ignore": [
+    "**/.specify/**",
+    "**/.speckit/**",
+    "**/dist/**",
+    "**/coverage/**",
+    "ai-service/**"
+  ]
+}

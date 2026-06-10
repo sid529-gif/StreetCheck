@@ -1,0 +1,33 @@
+node_modules/
+dist/
+coverage/
+.env
+*.env.local
+.DS_Store
+*.log
+
+# Python
+ai-service/__pycache__/
+ai-service/.venv/
+ai-service/*.egg-info/
+ai-service/.pytest_cache/
+ai-service/.ruff_cache/
+ai-service/.mypy_cache/
+__pycache__/
+*.pyc
+*.pyo
+
+# SpecKit — commands folder may contain credentials
+.speckit/commands/
+
+# Prisma
+prisma/migrations/dev.db
+
+# Build outputs
+client/dist/
+server/dist/
+
+# Editor
+.vscode/settings.json
+*.swp
+*.swo

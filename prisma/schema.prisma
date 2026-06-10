@@ -1,0 +1,87 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [postgis]
+}
+
+// ── Road Segments ─────────────────────────────────────────────────────────────
+// Geometry column (LINESTRING 4326) is managed via raw SQL / PostGIS.
+// Use $queryRaw for all spatial queries — Prisma does not natively support PostGIS types.
+model RoadSegment {
+  segmentId         String   @id @map("segment_id")
+  osmWayId          BigInt?  @map("osm_way_id")
+  name              String?
+
+  // Safety score inputs — all normalised to [0.0, 1.0]
+  lightingScore     Float    @default(0.5)  @map("lighting_score")
+  accidentRate      Float    @default(0.0)  @map("accident_rate")
+  floodRisk         Float    @default(0.0)  @map("flood_risk")
+  surfaceQuality    Float    @default(0.5)  @map("surface_quality")
+  walkabilityScore  Float    @default(0.5)  @map("walkability_score")
+
+  // Computed columns — set by DB trigger; read-only via Prisma
+  // safety_score and safety_band are GENERATED ALWAYS columns in Postgres
+  // Access them via $queryRaw when needed
+
+  // Metadata
+  scoringVersion    Int      @default(1)    @map("scoring_version")
+  activeReportCount Int      @default(0)    @map("active_report_count")
+  lastUpdated       DateTime @default(now()) @updatedAt @map("last_updated")
+  dataSources       String[] @default([])   @map("data_sources")
+
+  reports HazardReport[]
+
+  @@map("road_segments")
+}
+
+// ── Hazard Reports ────────────────────────────────────────────────────────────
+model HazardReport {
+  reportId        String   @id @default(uuid()) @map("report_id")
+  segmentId       String   @map("segment_id")
+
+  hazardType      String   @map("hazard_type")
+  // Valid values: pothole | broken_streetlight | waterlogging |
+  //               construction_debris | stray_animals | broken_footpath | open_manhole
+
+  description     String?
+  photoUrl        String?  @map("photo_url")
+  aiSuggestedType String?  @map("ai_suggested_type")
+  confirmedType   String   @map("confirmed_type")
+  severityWeight  Float    @default(0.5) @map("severity_weight")
+
+  // Anonymous reporter token (client-generated UUID from localStorage)
+  reporterToken   String   @map("reporter_token")
+
+  createdAt       DateTime @default(now()) @map("created_at")
+  isActive        Boolean  @default(true)  @map("is_active")
+  expiresAt       DateTime @map("expires_at")
+
+  segment RoadSegment @relation(fields: [segmentId], references: [segmentId], onDelete: Cascade)
+
+  @@index([segmentId, isActive], name: "hazard_reports_segment_active_idx")
+  @@index([expiresAt],           name: "hazard_reports_expires_idx")
+  @@map("hazard_reports")
+}
+
+// ── Data Refresh Log ──────────────────────────────────────────────────────────
+model DataRefreshLog {
+  id              Int      @id @default(autoincrement())
+  source          String
+  // Valid values: osm | telangana | hydraa | morth | user_report
+
+  fetchedAt       DateTime @default(now()) @map("fetched_at")
+  segmentsUpdated Int      @default(0)     @map("segments_updated")
+  status          String
+  // Valid values: success | partial | failed
+
+  errorMessage    String?  @map("error_message")
+  durationMs      Int?     @map("duration_ms")
+
+  @@index([source, fetchedAt], name: "data_refresh_log_source_idx")
+  @@map("data_refresh_log")
+}

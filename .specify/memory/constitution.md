@@ -3,24 +3,31 @@
 ## Core Principles
 
 ### I. Civic Data First
+
 Every feature must be grounded in publicly verifiable civic data. No crime data, no socioeconomic indicators, no speculative inputs. Data sources must be one of: OSM/Overpass API, Telangana Open Data, HYDRAA shapefiles, MoRTH records, or StreetCheck citizen reports. Any new data source requires explicit justification against this list.
 
 ### II. Monorepo Workspace Architecture
+
 The codebase lives in a single npm workspaces monorepo: `client/` (React 18 + Vite), `server/` (Node.js + Express), and `shared/` (Zod schemas + TypeScript types). The Python AI micro-service (`ai-service/`) is a standalone FastAPI process and does **not** share the npm workspace. All business logic lives in Node/Express — Python is scoped exclusively to the AI pipeline.
 
 ### III. Schema-Driven Contracts (NON-NEGOTIABLE)
+
 All API request/response shapes are defined as Zod schemas in `shared/src/schemas/`. Both `client/` and `server/` import from `shared/` — never define schemas independently in either package. Breaking a Zod schema is a contract change and requires a version bump to the schema file. No `any` types in TypeScript.
 
 ### IV. Geospatial via PostGIS Only
+
 All spatial queries (bounding-box lookups, nearest-road snapping, segment retrieval) use PostGIS via Prisma raw queries or the `pg` client. No in-memory GeoJSON filtering of large datasets. Road routing uses `graphology` (JS, server-side) with safety-weighted edges. Python NetworkX is explicitly prohibited.
 
 ### V. Safety Score Immutability Rules
+
 The scoring formula weights are locked: lighting 0.30, accident_rate 0.25, flood_risk 0.20, surface_quality 0.15, walkability 0.10. Any change to weights requires updating `shared/src/scoring/weights.ts` and bumping the `scoring_version` field in the segment schema. Scores must always be recomputed from raw normalised sub-scores — never manually patched.
 
 ### VI. AI Calls via Claude API Only (Primary)
+
 All LLM/vision calls use `claude-sonnet-4-20250514`. HuggingFace zero-shot and CLIP/YOLOv8 are heuristic fallbacks only — they must not be the primary path for any user-facing feature. The AI micro-service must return a `confidence` score; if `< 0.65` for CV detection, the user is prompted to manually confirm the hazard type.
 
 ### VII. Simplicity & Hackathon Velocity
+
 YAGNI. No over-engineering. No authentication system beyond JWT. No multi-tenant architecture. No microservices beyond the single AI Python service. If a feature is not in the demo script (Section 8 of the brief), it is out of scope for v1. Every added dependency must be justified against the tech stack table in the brief.
 
 ## Technology Constraints

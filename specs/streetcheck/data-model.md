@@ -107,11 +107,11 @@ CREATE INDEX road_segments_osm_idx ON road_segments(osm_way_id);
 
 ### Segment ID Convention
 
-| Scenario | Format | Example |
-|---|---|---|
-| Normal OSM way | `hyd_{osm_way_id}` | `hyd_12345678` |
+| Scenario                  | Format                     | Example          |
+| ------------------------- | -------------------------- | ---------------- |
+| Normal OSM way            | `hyd_{osm_way_id}`         | `hyd_12345678`   |
 | Split OSM way (long road) | `hyd_{osm_way_id}_{index}` | `hyd_12345678_2` |
-| MoRTH geocoded black spot | `hyd_morth_{uuid_prefix}` | `hyd_morth_a3f2` |
+| MoRTH geocoded black spot | `hyd_morth_{uuid_prefix}`  | `hyd_morth_a3f2` |
 
 ---
 
@@ -184,15 +184,15 @@ CREATE INDEX hazard_reports_bbox_idx ON hazard_reports(created_at DESC);
 
 ### Hazard Type → Score Dimension Mapping
 
-| hazard_type | Dimension Penalised | severity_weight | Effect |
-|---|---|---|---|
-| `pothole` | `surface_quality` | 0.20 | Subtract 0.20 from surface_quality (min 0) |
-| `broken_streetlight` | `lighting_score` | 0.25 | Subtract 0.25 from lighting_score (min 0) |
-| `waterlogging` | `flood_risk` | 0.30 | Add 0.30 to flood_risk (max 1) |
-| `construction_debris` | `surface_quality` + `walkability_score` | 0.15 + 0.10 | Both dimensions penalised |
-| `stray_animals` | `walkability_score` | 0.10 | Subtract 0.10 from walkability_score |
-| `broken_footpath` | `walkability_score` | 0.25 | Subtract 0.25 from walkability_score |
-| `open_manhole` | `surface_quality` | 0.30 | Subtract 0.30 from surface_quality |
+| hazard_type           | Dimension Penalised                     | severity_weight | Effect                                     |
+| --------------------- | --------------------------------------- | --------------- | ------------------------------------------ |
+| `pothole`             | `surface_quality`                       | 0.20            | Subtract 0.20 from surface_quality (min 0) |
+| `broken_streetlight`  | `lighting_score`                        | 0.25            | Subtract 0.25 from lighting_score (min 0)  |
+| `waterlogging`        | `flood_risk`                            | 0.30            | Add 0.30 to flood_risk (max 1)             |
+| `construction_debris` | `surface_quality` + `walkability_score` | 0.15 + 0.10     | Both dimensions penalised                  |
+| `stray_animals`       | `walkability_score`                     | 0.10            | Subtract 0.10 from walkability_score       |
+| `broken_footpath`     | `walkability_score`                     | 0.25            | Subtract 0.25 from walkability_score       |
+| `open_manhole`        | `surface_quality`                       | 0.30            | Subtract 0.30 from surface_quality         |
 
 > **Important**: Report penalties are computed as **runtime overrides** on base values — base values in `road_segments` are never mutated by citizen reports. The scoring engine computes effective sub-scores as: `effective_score = clamp(base_score + Σ(active_penalties), 0, 1)`
 
@@ -302,21 +302,21 @@ model DataRefreshLog {
 
 ## OSM Tag → Score Mapping Reference
 
-| OSM Tag | Value | Dimension | Score |
-|---|---|---|---|
-| `lit` | `yes` | lighting_score | 1.0 |
-| `lit` | `no` | lighting_score | 0.0 |
-| `lit` | absent | lighting_score | 0.5 |
-| `surface` | `asphalt` | surface_quality | 0.9 |
-| `surface` | `concrete` | surface_quality | 0.85 |
-| `surface` | `paved` | surface_quality | 0.85 |
-| `surface` | `sett` | surface_quality | 0.7 |
-| `surface` | `compacted` | surface_quality | 0.6 |
-| `surface` | `unpaved` | surface_quality | 0.3 |
-| `surface` | `dirt` | surface_quality | 0.2 |
-| `surface` | absent | surface_quality | 0.5 |
-| `sidewalk` | `both` | walkability_score | 1.0 |
-| `sidewalk` | `left` or `right` | walkability_score | 0.6 |
-| `sidewalk` | `none` or `no` | walkability_score | 0.1 |
-| `footway` | any | walkability_score | 0.8 |
-| `sidewalk` | absent, no footway | walkability_score | 0.3 |
+| OSM Tag    | Value              | Dimension         | Score |
+| ---------- | ------------------ | ----------------- | ----- |
+| `lit`      | `yes`              | lighting_score    | 1.0   |
+| `lit`      | `no`               | lighting_score    | 0.0   |
+| `lit`      | absent             | lighting_score    | 0.5   |
+| `surface`  | `asphalt`          | surface_quality   | 0.9   |
+| `surface`  | `concrete`         | surface_quality   | 0.85  |
+| `surface`  | `paved`            | surface_quality   | 0.85  |
+| `surface`  | `sett`             | surface_quality   | 0.7   |
+| `surface`  | `compacted`        | surface_quality   | 0.6   |
+| `surface`  | `unpaved`          | surface_quality   | 0.3   |
+| `surface`  | `dirt`             | surface_quality   | 0.2   |
+| `surface`  | absent             | surface_quality   | 0.5   |
+| `sidewalk` | `both`             | walkability_score | 1.0   |
+| `sidewalk` | `left` or `right`  | walkability_score | 0.6   |
+| `sidewalk` | `none` or `no`     | walkability_score | 0.1   |
+| `footway`  | any                | walkability_score | 0.8   |
+| `sidewalk` | absent, no footway | walkability_score | 0.3   |

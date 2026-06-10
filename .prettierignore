@@ -1,0 +1,16 @@
+node_modules/
+dist/
+coverage/
+*.log
+
+# SpecKit docs — these are pre-formatted markdown files, skip Prettier
+specs/
+.specify/
+.speckit/
+
+# Prisma migrations are auto-generated
+prisma/migrations/
+
+# Python
+ai-service/__pycache__/
+ai-service/.venv/

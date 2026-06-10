@@ -1,0 +1,81 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --safety-green: #22c55e;
+    --safety-amber: #f59e0b;
+    --safety-red: #ef4444;
+    --bg-map: #1a1f2e;
+    --bg-panel: #1e2433;
+    --bg-card: #252d3d;
+    --border: #2e3a52;
+    --text-primary: #f1f5f9;
+    --text-muted: #94a3b8;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', system-ui, sans-serif;
+    background-color: var(--bg-map);
+    color: var(--text-primary);
+  }
+}
+
+@layer components {
+  .safety-green {
+    color: var(--safety-green);
+  }
+  .safety-amber {
+    color: var(--safety-amber);
+  }
+  .safety-red {
+    color: var(--safety-red);
+  }
+
+  .bg-safety-green {
+    background-color: var(--safety-green);
+  }
+  .bg-safety-amber {
+    background-color: var(--safety-amber);
+  }
+  .bg-safety-red {
+    background-color: var(--safety-red);
+  }
+
+  .panel {
+    @apply bg-[var(--bg-panel)] border border-[var(--border)] rounded-xl shadow-2xl;
+  }
+
+  .card {
+    @apply bg-[var(--bg-card)] border border-[var(--border)] rounded-lg p-4;
+  }
+}
+
+/* Leaflet overrides for dark theme */
+.leaflet-container {
+  background: #1a1f2e;
+  font-family: 'Inter', sans-serif;
+}
+
+.leaflet-control-zoom a {
+  background: var(--bg-panel) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border) !important;
+}
+
+.leaflet-control-attribution {
+  background: rgba(26, 31, 46, 0.8) !important;
+  color: var(--text-muted) !important;
+  font-size: 10px;
+}

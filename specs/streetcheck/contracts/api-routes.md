@@ -31,14 +31,14 @@ Compute two route options between an origin and destination: the fastest (distan
 
 ### Request Body Schema
 
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `origin.address` | `string` | ❌ | Address string for Nominatim geocoding |
-| `origin.lat` | `number` | ❌ | Latitude (WGS84) — skips geocoding if provided |
-| `origin.lng` | `number` | ❌ | Longitude (WGS84) — skips geocoding if provided |
-| `destination.address` | `string` | ❌ | Address string |
-| `destination.lat` | `number` | ❌ | Latitude |
-| `destination.lng` | `number` | ❌ | Longitude |
+| Field                 | Type     | Required | Description                                     |
+| --------------------- | -------- | -------- | ----------------------------------------------- |
+| `origin.address`      | `string` | ❌       | Address string for Nominatim geocoding          |
+| `origin.lat`          | `number` | ❌       | Latitude (WGS84) — skips geocoding if provided  |
+| `origin.lng`          | `number` | ❌       | Longitude (WGS84) — skips geocoding if provided |
+| `destination.address` | `string` | ❌       | Address string                                  |
+| `destination.lat`     | `number` | ❌       | Latitude                                        |
+| `destination.lng`     | `number` | ❌       | Longitude                                       |
 
 ### Response: `200 OK`
 
@@ -54,7 +54,11 @@ Compute two route options between an origin and destination: the fastest (distan
     "segmentIds": ["hyd_11111111", "hyd_22222222", "hyd_33333333"],
     "geometry": {
       "type": "LineString",
-      "coordinates": [[78.364, 17.432], [78.374, 17.440], [78.384, 17.445]]
+      "coordinates": [
+        [78.364, 17.432],
+        [78.374, 17.44],
+        [78.384, 17.445]
+      ]
     },
     "hazardSummary": {
       "redSegments": 1,
@@ -73,7 +77,11 @@ Compute two route options between an origin and destination: the fastest (distan
     "segmentIds": ["hyd_44444444", "hyd_55555555", "hyd_66666666"],
     "geometry": {
       "type": "LineString",
-      "coordinates": [[78.364, 17.432], [78.368, 17.436], [78.380, 17.443]]
+      "coordinates": [
+        [78.364, 17.432],
+        [78.368, 17.436],
+        [78.38, 17.443]
+      ]
     },
     "hazardSummary": {
       "redSegments": 0,
@@ -89,8 +97,8 @@ Compute two route options between an origin and destination: the fastest (distan
   },
   "destination": {
     "address": "Gachibowli, Hyderabad",
-    "lat": 17.4450,
-    "lng": 78.3840
+    "lat": 17.445,
+    "lng": 78.384
   }
 }
 ```
@@ -112,12 +120,12 @@ This ensures longer segments have proportionally more influence on the route sco
 
 ### Error Responses
 
-| Status | Code | Description |
-|---|---|---|
-| `400 Bad Request` | `GEOCODING_FAILED` | Nominatim could not resolve one or both addresses |
-| `400 Bad Request` | `ORIGIN_OUT_OF_BOUNDS` | Origin coordinates outside Hyderabad bounding box |
-| `400 Bad Request` | `DESTINATION_OUT_OF_BOUNDS` | Destination outside bounds |
-| `400 Bad Request` | `NO_ROUTE_FOUND` | Graphology found no path between origin and destination nodes |
-| `400 Bad Request` | `SAME_ORIGIN_DESTINATION` | Origin and destination resolve to the same graph node |
-| `500 Internal Server Error` | `ROUTING_GRAPH_ERROR` | Graphology internal error |
-| `503 Service Unavailable` | `GRAPH_NOT_READY` | Routing graph is still loading at server startup |
+| Status                      | Code                        | Description                                                   |
+| --------------------------- | --------------------------- | ------------------------------------------------------------- |
+| `400 Bad Request`           | `GEOCODING_FAILED`          | Nominatim could not resolve one or both addresses             |
+| `400 Bad Request`           | `ORIGIN_OUT_OF_BOUNDS`      | Origin coordinates outside Hyderabad bounding box             |
+| `400 Bad Request`           | `DESTINATION_OUT_OF_BOUNDS` | Destination outside bounds                                    |
+| `400 Bad Request`           | `NO_ROUTE_FOUND`            | Graphology found no path between origin and destination nodes |
+| `400 Bad Request`           | `SAME_ORIGIN_DESTINATION`   | Origin and destination resolve to the same graph node         |
+| `500 Internal Server Error` | `ROUTING_GRAPH_ERROR`       | Graphology internal error                                     |
+| `503 Service Unavailable`   | `GRAPH_NOT_READY`           | Routing graph is still loading at server startup              |

@@ -1,6 +1,6 @@
 # StreetCheck
 
-> *"Google Maps tells you the fastest route. StreetCheck tells you the safest one."*
+> _"Google Maps tells you the fastest route. StreetCheck tells you the safest one."_
 
 StreetCheck is a civic road safety intelligence platform for Hyderabad. It assigns per-road-segment safety scores derived from publicly verifiable data — street lighting conditions, accident history, flooding risk, road surface quality, and footpath continuity. Citizens can contribute real-time hazard reports, and AI surfaces natural-language safety summaries and route recommendations optimised for safety rather than speed.
 
@@ -20,14 +20,14 @@ This leaves several user groups without reliable safety information when navigat
 
 Specific hazards not captured by any existing navigation tool:
 
-| Hazard | Example |
-|---|---|
-| Poor lighting | Unlit stretches between two lit roads |
-| Accident-prone intersections | Known black spots with no signage |
-| Waterlogging / flooding | Low-lying underpasses during monsoon |
-| Broken or missing footpaths | Pedestrians forced onto roads |
-| Active construction zones | Open trenches, debris, temporary diversions |
-| Damaged road surface | Potholes, broken tarmac, open manholes |
+| Hazard                       | Example                                     |
+| ---------------------------- | ------------------------------------------- |
+| Poor lighting                | Unlit stretches between two lit roads       |
+| Accident-prone intersections | Known black spots with no signage           |
+| Waterlogging / flooding      | Low-lying underpasses during monsoon        |
+| Broken or missing footpaths  | Pedestrians forced onto roads               |
+| Active construction zones    | Open trenches, debris, temporary diversions |
+| Damaged road surface         | Potholes, broken tarmac, open manholes      |
 
 ### Proposed Solution
 
@@ -54,15 +54,15 @@ Each road segment in the city gets a **StreetCheck Safety Score** (0–100) comp
 
 ### Target Users
 
-| User Group | Primary Use Case |
-|---|---|
-| Women commuters | Late-night walking routes, well-lit paths |
-| Students | Safe routes near colleges and bus stops |
-| Senior citizens | Footpath quality, accessible routes |
-| Cyclists | Road surface quality |
-| Runners | Early morning / late-night route safety |
-| Delivery personnel | Monsoon-safe routing, pothole avoidance |
-| City authorities | Maintenance prioritisation dashboard |
+| User Group         | Primary Use Case                          |
+| ------------------ | ----------------------------------------- |
+| Women commuters    | Late-night walking routes, well-lit paths |
+| Students           | Safe routes near colleges and bus stops   |
+| Senior citizens    | Footpath quality, accessible routes       |
+| Cyclists           | Road surface quality                      |
+| Runners            | Early morning / late-night route safety   |
+| Delivery personnel | Monsoon-safe routing, pothole avoidance   |
+| City authorities   | Maintenance prioritisation dashboard      |
 
 ### Project Status
 
@@ -74,78 +74,78 @@ Hackathon prototype — full-stack architecture, speckit-driven design documents
 
 ### Frontend (`client/`)
 
-| Tool | Purpose |
-|---|---|
-| React 18 | UI framework |
-| Vite | Dev server and bundler |
-| Tailwind CSS v3 | Styling |
-| React Router v6 | Client-side routing |
-| Zustand | Global state (map filters, session token) |
-| React Query | Server state, API data fetching and caching |
-| `react-leaflet` | Map rendering (Leaflet wrapper for React) |
-| Leaflet GeoJSON | Safety heatmap overlay, segment colouring |
+| Tool            | Purpose                                     |
+| --------------- | ------------------------------------------- |
+| React 18        | UI framework                                |
+| Vite            | Dev server and bundler                      |
+| Tailwind CSS v3 | Styling                                     |
+| React Router v6 | Client-side routing                         |
+| Zustand         | Global state (map filters, session token)   |
+| React Query     | Server state, API data fetching and caching |
+| `react-leaflet` | Map rendering (Leaflet wrapper for React)   |
+| Leaflet GeoJSON | Safety heatmap overlay, segment colouring   |
 
 ### Backend (`server/`)
 
-| Tool | Purpose |
-|---|---|
-| Node.js ≥ 20 | Runtime |
-| Express.js | REST API framework |
-| Prisma ORM | Database access layer |
-| PostgreSQL + PostGIS | Road segment storage with geospatial queries |
-| `node-cron` | Scheduled Overpass API polling jobs |
-| `graphology` + `graphology-shortest-path` | Safety-weighted routing graph |
-| `jsonwebtoken` | Auth tokens |
-| Winston | Structured logging |
+| Tool                                      | Purpose                                      |
+| ----------------------------------------- | -------------------------------------------- |
+| Node.js ≥ 20                              | Runtime                                      |
+| Express.js                                | REST API framework                           |
+| Prisma ORM                                | Database access layer                        |
+| PostgreSQL + PostGIS                      | Road segment storage with geospatial queries |
+| `node-cron`                               | Scheduled Overpass API polling jobs          |
+| `graphology` + `graphology-shortest-path` | Safety-weighted routing graph                |
+| `jsonwebtoken`                            | Auth tokens                                  |
+| Winston                                   | Structured logging                           |
 
 ### AI & ML Pipeline (`ai-service/` — Python standalone)
 
-| Tool | Purpose |
-|---|---|
+| Tool                                           | Purpose                                                                              |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------ |
 | Claude Vision API (`claude-sonnet-4-20250514`) | Photo hazard detection, conversational assistant, area summaries, route explanations |
-| HuggingFace `facebook/bart-large-mnli` | Zero-shot NLP classification of free-text reports |
-| CLIP / YOLOv8 | Fallback CV heuristics for hazard type suggestion |
-| Python 3.11 + FastAPI | Thin internal micro-service exposing `/classify` and `/detect` |
+| HuggingFace `facebook/bart-large-mnli`         | Zero-shot NLP classification of free-text reports                                    |
+| CLIP / YOLOv8                                  | Fallback CV heuristics for hazard type suggestion                                    |
+| Python 3.11 + FastAPI                          | Thin internal micro-service exposing `/classify` and `/detect`                       |
 
 ### Shared (`shared/`)
 
-| Tool | Purpose |
-|---|---|
-| Zod | Single source of truth for all API schemas; imported by both `client/` and `server/` |
-| TypeScript 5.x (strict) | Type safety across all workspaces |
+| Tool                    | Purpose                                                                              |
+| ----------------------- | ------------------------------------------------------------------------------------ |
+| Zod                     | Single source of truth for all API schemas; imported by both `client/` and `server/` |
+| TypeScript 5.x (strict) | Type safety across all workspaces                                                    |
 
 ### Data Sources
 
-| Source | Data | Update Frequency |
-|---|---|---|
-| OpenStreetMap (Overpass API) | Road geometry, lighting tags, surface type, footway presence | Every 15 minutes |
-| Telangana Open Data Portal | Accident records, civic complaints | Every 6 hours |
-| HYDRAA (flood zones) | Flood-prone shapefile overlays | Weekly freshness check |
-| MoRTH accident records | National black spot data | Annual seed |
-| StreetCheck citizen reports | All live ephemeral hazards | Always live |
+| Source                       | Data                                                         | Update Frequency       |
+| ---------------------------- | ------------------------------------------------------------ | ---------------------- |
+| OpenStreetMap (Overpass API) | Road geometry, lighting tags, surface type, footway presence | Every 15 minutes       |
+| Telangana Open Data Portal   | Accident records, civic complaints                           | Every 6 hours          |
+| HYDRAA (flood zones)         | Flood-prone shapefile overlays                               | Weekly freshness check |
+| MoRTH accident records       | National black spot data                                     | Annual seed            |
+| StreetCheck citizen reports  | All live ephemeral hazards                                   | Always live            |
 
 ### Infrastructure
 
-| Tool | Purpose |
-|---|---|
+| Tool                    | Purpose                                       |
+| ----------------------- | --------------------------------------------- |
 | Docker + Docker Compose | Local dev (PostgreSQL + PostGIS + ai-service) |
-| GitLab CI/CD | Lint, type-check, test, security pipeline |
-| GitHub Actions | GitHub Pages deployment |
-| Render | Backend Docker web service deployment |
-| Cloudinary | User photo uploads (CV pipeline input) |
+| GitLab CI/CD            | Lint, type-check, test, security pipeline     |
+| GitHub Actions          | GitHub Pages deployment                       |
+| Render                  | Backend Docker web service deployment         |
+| Cloudinary              | User photo uploads (CV pipeline input)        |
 
 ### Dev Tooling
 
-| Tool | Purpose |
-|---|---|
-| Vitest | Unit and integration tests (client and server) |
-| Prettier | Code formatting |
-| ESLint + oxlint + Biome | Multi-layer linting |
-| Husky + lint-staged | Pre-commit hooks |
-| Knip | Dead code detection |
-| `git-cliff` | Changelog generation |
-| Gitleaks | Secret scanning |
-| Ruff + Black + mypy | Python AI service linting and formatting |
+| Tool                    | Purpose                                        |
+| ----------------------- | ---------------------------------------------- |
+| Vitest                  | Unit and integration tests (client and server) |
+| Prettier                | Code formatting                                |
+| ESLint + oxlint + Biome | Multi-layer linting                            |
+| Husky + lint-staged     | Pre-commit hooks                               |
+| Knip                    | Dead code detection                            |
+| `git-cliff`             | Changelog generation                           |
+| Gitleaks                | Secret scanning                                |
+| Ruff + Black + mypy     | Python AI service linting and formatting       |
 
 ---
 
@@ -234,11 +234,11 @@ safety_score = (
 
 All inputs normalised to `[0, 1]`. Final score maps to:
 
-| Score | Band | Meaning |
-|---|---|---|
-| 75–100 | 🟢 Green | Generally safe |
-| 45–74 | 🟡 Amber | Caution advised |
-| 0–44 | 🔴 Red | Avoid if possible, especially at night |
+| Score  | Band     | Meaning                                |
+| ------ | -------- | -------------------------------------- |
+| 75–100 | 🟢 Green | Generally safe                         |
+| 45–74  | 🟡 Amber | Caution advised                        |
+| 0–44   | 🔴 Red   | Avoid if possible, especially at night |
 
 Scoring weights are locked in `shared/src/scoring/weights.ts` — any change requires a `scoring_version` bump.
 
@@ -247,17 +247,21 @@ Scoring weights are locked in `shared/src/scoring/weights.ts` — any change req
 ## API Overview
 
 ### Segments
+
 - `GET /api/segments?bbox=minLng,minLat,maxLng,maxLat` — GeoJSON FeatureCollection for viewport
 - `GET /api/segments/:id` — single segment with full score breakdown and active reports
 
 ### Reports
+
 - `POST /api/reports` — submit a hazard report (triggers score update)
 - `GET /api/reports?bbox=...` — active report pins for map overlay
 
 ### Routes
+
 - `POST /api/routes` — compute fastest vs. safest route between origin and destination
 
 ### AI
+
 - `POST /api/ai/assistant` — conversational safety Q&A (Claude + segment context)
 - `POST /api/ai/summary` — 2-line natural language segment summary
 - `POST /api/ai/explanation` — comparative route safety explanation
@@ -339,25 +343,25 @@ Default URLs:
 
 At repository root:
 
-| Script | Description |
-|---|---|
-| `npm run dev` | Start client + server in parallel |
-| `npm run dev:client` | Start Vite dev server only |
-| `npm run dev:server` | Start Express server only |
-| `npm run build` | Production build (client + server) |
-| `npm run lint` | ESLint across all workspaces |
-| `npm run format` | Prettier format all files |
-| `npm run format:check` | Prettier check (CI mode) |
-| `npm run type-check` | TypeScript strict check |
-| `npm run test` | Vitest unit + integration tests |
-| `npm run coverage` | Test coverage report |
-| `npm run audit` | npm audit for all workspaces |
-| `npm run secrets:scan` | Gitleaks secret scan |
-| `npm run knip` | Dead code and unused dependency check |
-| `npm run changelog` | Generate changelog via git-cliff |
-| `npm run prisma:push` | Push Prisma schema to database |
-| `npm run prisma:generate` | Regenerate Prisma client |
-| `npm run seed:overpass` | Manually trigger Overpass API seed |
+| Script                    | Description                           |
+| ------------------------- | ------------------------------------- |
+| `npm run dev`             | Start client + server in parallel     |
+| `npm run dev:client`      | Start Vite dev server only            |
+| `npm run dev:server`      | Start Express server only             |
+| `npm run build`           | Production build (client + server)    |
+| `npm run lint`            | ESLint across all workspaces          |
+| `npm run format`          | Prettier format all files             |
+| `npm run format:check`    | Prettier check (CI mode)              |
+| `npm run type-check`      | TypeScript strict check               |
+| `npm run test`            | Vitest unit + integration tests       |
+| `npm run coverage`        | Test coverage report                  |
+| `npm run audit`           | npm audit for all workspaces          |
+| `npm run secrets:scan`    | Gitleaks secret scan                  |
+| `npm run knip`            | Dead code and unused dependency check |
+| `npm run changelog`       | Generate changelog via git-cliff      |
+| `npm run prisma:push`     | Push Prisma schema to database        |
+| `npm run prisma:generate` | Regenerate Prisma client              |
+| `npm run seed:overpass`   | Manually trigger Overpass API seed    |
 
 ---
 

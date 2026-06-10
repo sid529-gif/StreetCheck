@@ -1,0 +1,53 @@
+version: '3.9'
+
+services:
+  # ── PostgreSQL + PostGIS ────────────────────────────────────────────────────
+  postgres:
+    image: postgis/postgis:16-3.4-alpine
+    container_name: streetcheck-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: streetcheck
+      POSTGRES_PASSWORD: streetcheck_dev
+      POSTGRES_DB: streetcheck
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U streetcheck -d streetcheck']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ── Python AI Micro-service ─────────────────────────────────────────────────
+  ai-service:
+    build:
+      context: ./ai-service
+      dockerfile: Dockerfile
+    container_name: streetcheck-ai
+    restart: unless-stopped
+    environment:
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      AI_SERVICE_SECRET: ${AI_SERVICE_SECRET:-dev-secret}
+      LOG_LEVEL: INFO
+    ports:
+      - '8001:8001'
+    volumes:
+      - ./ai-service:/app
+      - ai_model_cache:/root/.cache/huggingface
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8001/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s  # Model loading takes time on first start
+
+volumes:
+  postgres_data:
+  ai_model_cache:
+
+networks:
+  default:
+    name: streetcheck-network

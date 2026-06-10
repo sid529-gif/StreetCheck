@@ -1,0 +1,72 @@
+stages:
+  - quality
+  - build
+  - pages
+
+variables:
+  NODE_VERSION: '20'
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - node_modules/
+    - client/node_modules/
+    - server/node_modules/
+    - shared/node_modules/
+
+# ── Quality gate ────────────────────────────────────────────────────────────
+type-check:
+  stage: quality
+  image: node:${NODE_VERSION}-alpine
+  script:
+    - npm ci
+    - npm run type-check
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push"
+
+format-check:
+  stage: quality
+  image: node:${NODE_VERSION}-alpine
+  script:
+    - npm ci
+    - npm run format:check
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push"
+
+test:
+  stage: quality
+  image: node:${NODE_VERSION}-alpine
+  script:
+    - npm ci
+    - npm run test
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push"
+
+# ── Build ────────────────────────────────────────────────────────────────────
+build-client:
+  stage: build
+  image: node:${NODE_VERSION}-alpine
+  script:
+    - npm ci
+    - npm run build -w client
+  artifacts:
+    paths:
+      - client/dist/
+    expire_in: 1 hour
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push"
+
+# ── GitLab Pages ─────────────────────────────────────────────────────────────
+pages:
+  stage: pages
+  image: node:${NODE_VERSION}-alpine
+  script:
+    - npm ci
+    - npm run build -w client
+    - mkdir -p public
+    - cp -r client/dist/. public/
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "feature/StreetCheck"

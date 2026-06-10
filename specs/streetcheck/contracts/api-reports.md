@@ -30,16 +30,16 @@ Submit a new hazard report. Triggers immediate segment score update and incremen
 
 ### Request Body Schema
 
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `segmentId` | `string \| null` | ❌ | If null, server snaps to nearest segment within 100m of `tapLocation` |
-| `tapLocation` | `{ lat: number, lng: number }` | ✅ | Exact map tap coordinates |
-| `hazardType` | `HazardType` | ✅ | One of 7 enum values (must match `confirmedType`) |
-| `confirmedType` | `HazardType` | ✅ | The type the user confirmed after any AI suggestion |
-| `description` | `string` | ❌ | Max 500 characters |
-| `photoUrl` | `string` | ❌ | Cloudinary secure URL (client uploads separately, sends URL here) |
-| `aiSuggestedType` | `HazardType \| null` | ❌ | AI pipeline suggestion before user confirmation |
-| `reporterToken` | `string` | ✅ | Client-generated anonymous UUID from localStorage |
+| Field             | Type                           | Required | Description                                                           |
+| ----------------- | ------------------------------ | -------- | --------------------------------------------------------------------- |
+| `segmentId`       | `string \| null`               | ❌       | If null, server snaps to nearest segment within 100m of `tapLocation` |
+| `tapLocation`     | `{ lat: number, lng: number }` | ✅       | Exact map tap coordinates                                             |
+| `hazardType`      | `HazardType`                   | ✅       | One of 7 enum values (must match `confirmedType`)                     |
+| `confirmedType`   | `HazardType`                   | ✅       | The type the user confirmed after any AI suggestion                   |
+| `description`     | `string`                       | ❌       | Max 500 characters                                                    |
+| `photoUrl`        | `string`                       | ❌       | Cloudinary secure URL (client uploads separately, sends URL here)     |
+| `aiSuggestedType` | `HazardType \| null`           | ❌       | AI pipeline suggestion before user confirmation                       |
+| `reporterToken`   | `string`                       | ✅       | Client-generated anonymous UUID from localStorage                     |
 
 ### HazardType Enum
 
@@ -67,13 +67,13 @@ Submit a new hazard report. Triggers immediate segment score update and incremen
 
 ### Error Responses
 
-| Status | Code | Description |
-|---|---|---|
-| `400 Bad Request` | `INVALID_HAZARD_TYPE` | `confirmedType` not in enum |
-| `400 Bad Request` | `NO_SEGMENT_FOUND` | Snap failed — no segment within 100m of `tapLocation` |
-| `400 Bad Request` | `INVALID_LOCATION` | Coordinates outside Hyderabad bounding box |
-| `429 Too Many Requests` | `RATE_LIMIT_EXCEEDED` | `reporterToken` submitted >5 reports in 10 minutes |
-| `500 Internal Server Error` | `REPORT_SAVE_FAILED` | Database error |
+| Status                      | Code                  | Description                                           |
+| --------------------------- | --------------------- | ----------------------------------------------------- |
+| `400 Bad Request`           | `INVALID_HAZARD_TYPE` | `confirmedType` not in enum                           |
+| `400 Bad Request`           | `NO_SEGMENT_FOUND`    | Snap failed — no segment within 100m of `tapLocation` |
+| `400 Bad Request`           | `INVALID_LOCATION`    | Coordinates outside Hyderabad bounding box            |
+| `429 Too Many Requests`     | `RATE_LIMIT_EXCEEDED` | `reporterToken` submitted >5 reports in 10 minutes    |
+| `500 Internal Server Error` | `REPORT_SAVE_FAILED`  | Database error                                        |
 
 ---
 
@@ -83,10 +83,10 @@ Fetch all active hazard reports within a map viewport, for rendering as map pins
 
 ### Query Parameters
 
-| Parameter | Type | Required | Description |
-|---|---|---|---|
-| `bbox` | `string` | ✅ | Bounding box: `minLng,minLat,maxLng,maxLat` |
-| `hazardType` | `HazardType` | ❌ | Filter by specific hazard type |
+| Parameter    | Type         | Required | Description                                 |
+| ------------ | ------------ | -------- | ------------------------------------------- |
+| `bbox`       | `string`     | ✅       | Bounding box: `minLng,minLat,maxLng,maxLat` |
+| `hazardType` | `HazardType` | ❌       | Filter by specific hazard type              |
 
 ### Example Request
 
@@ -126,8 +126,8 @@ GET /api/reports?bbox=78.36,17.38,78.42,17.48
 
 ### Error Responses
 
-| Status | Code | Description |
-|---|---|---|
+| Status            | Code           | Description            |
+| ----------------- | -------------- | ---------------------- |
 | `400 Bad Request` | `INVALID_BBOX` | Malformed bounding box |
 
 ---
@@ -189,10 +189,10 @@ Proxies to the Python AI micro-service for computer vision hazard detection.
 }
 ```
 
-| `model` value | Meaning |
-|---|---|
-| `"claude-vision"` | Claude Vision API was used (primary path) |
-| `"clip"` | CLIP zero-shot was used (Claude confidence < 0.65) |
-| `"yolov8"` | YOLOv8 was used (CLIP also below threshold) |
+| `model` value     | Meaning                                            |
+| ----------------- | -------------------------------------------------- |
+| `"claude-vision"` | Claude Vision API was used (primary path)          |
+| `"clip"`          | CLIP zero-shot was used (Claude confidence < 0.65) |
+| `"yolov8"`        | YOLOv8 was used (CLIP also below threshold)        |
 
 > If all models return `confidence < 0.65`, `suggestedType` is `null` and the icon grid remains unselected.

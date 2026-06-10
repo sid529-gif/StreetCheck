@@ -18,9 +18,9 @@ Zero-shot NLP classification of free-text hazard descriptions. Uses HuggingFace 
 }
 ```
 
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `text` | `string` | ✅ | Free-text description from citizen report. Max 500 chars. |
+| Field  | Type     | Required | Description                                               |
+| ------ | -------- | -------- | --------------------------------------------------------- |
+| `text` | `string` | ✅       | Free-text description from citizen report. Max 500 chars. |
 
 ### Response: `200 OK`
 
@@ -62,11 +62,11 @@ Labels are mapped back to enum keys: `"pothole in road"` → `"pothole"`, etc.
 
 ### Error Responses
 
-| Status | Code | Description |
-|---|---|---|
-| `400 Bad Request` | Text field missing or empty |
-| `422 Unprocessable Entity` | Text exceeds 500 chars |
-| `503 Service Unavailable` | HuggingFace model not loaded |
+| Status                     | Code                         | Description |
+| -------------------------- | ---------------------------- | ----------- |
+| `400 Bad Request`          | Text field missing or empty  |
+| `422 Unprocessable Entity` | Text exceeds 500 chars       |
+| `503 Service Unavailable`  | HuggingFace model not loaded |
 
 ---
 
@@ -82,23 +82,23 @@ Computer vision hazard detection from a photo URL. Primary model: Claude Vision 
 }
 ```
 
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `imageUrl` | `string` | ✅ | Publicly accessible image URL (Cloudinary secure URL) |
+| Field      | Type     | Required | Description                                           |
+| ---------- | -------- | -------- | ----------------------------------------------------- |
+| `imageUrl` | `string` | ✅       | Publicly accessible image URL (Cloudinary secure URL) |
 
 ### Detection Pipeline
 
 ```
 1. Download image from Cloudinary URL
 2. Send to Claude Vision API with structured prompt:
-   "Identify which of these road hazards is visible in the image: 
-    pothole, broken streetlight, waterlogging, construction debris, 
+   "Identify which of these road hazards is visible in the image:
+    pothole, broken streetlight, waterlogging, construction debris,
     stray animals, broken footpath, open manhole.
     Respond with JSON: { hazardType: string | null, confidence: float, reasoning: string }
     If no hazard is clearly visible, set hazardType to null."
 3. If Claude confidence >= 0.65 → return Claude result
 4. Else → run CLIP zero-shot with prompts:
-   ["broken streetlight pole", "waterlogged road", "pothole in asphalt", 
+   ["broken streetlight pole", "waterlogged road", "pothole in asphalt",
     "construction debris", "stray dog on road", "broken concrete footpath", "open manhole"]
 5. If CLIP confidence >= 0.65 → return CLIP result with fallbackUsed=true
 6. Else → run YOLOv8 (pre-trained road hazard model)
@@ -119,21 +119,21 @@ Computer vision hazard detection from a photo URL. Primary model: Claude Vision 
 }
 ```
 
-| `model` | Description |
-|---|---|
-| `"claude-vision"` | Claude Vision API was used (primary) |
-| `"clip"` | CLIP zero-shot (Claude < 0.65 threshold) |
-| `"yolov8"` | YOLOv8 (Claude + CLIP both below threshold) |
-| `"none"` | All models failed or returned < 0.65 confidence |
+| `model`           | Description                                     |
+| ----------------- | ----------------------------------------------- |
+| `"claude-vision"` | Claude Vision API was used (primary)            |
+| `"clip"`          | CLIP zero-shot (Claude < 0.65 threshold)        |
+| `"yolov8"`        | YOLOv8 (Claude + CLIP both below threshold)     |
+| `"none"`          | All models failed or returned < 0.65 confidence |
 
 ### Error Responses
 
-| Status | Code | Description |
-|---|---|---|
-| `400 Bad Request` | `imageUrl` missing or invalid URL format |
+| Status                     | Code                                           | Description |
+| -------------------------- | ---------------------------------------------- | ----------- |
+| `400 Bad Request`          | `imageUrl` missing or invalid URL format       |
 | `422 Unprocessable Entity` | Image download failed (invalid URL, 404, etc.) |
-| `413 Payload Too Large` | Image exceeds 10MB |
-| `503 Service Unavailable` | All AI models unavailable |
+| `413 Payload Too Large`    | Image exceeds 10MB                             |
+| `503 Service Unavailable`  | All AI models unavailable                      |
 
 ---
 

@@ -1,0 +1,16 @@
+# StreetCheck AI Service — Python dependencies
+# Phase 0: minimal set needed for the FastAPI stub to start.
+# Phase 5 will activate transformers, torch, and ultralytics.
+
+fastapi>=0.115.0
+uvicorn[standard]>=0.34.0
+anthropic>=0.36.0
+httpx>=0.28.0
+pydantic>=2.10.0
+
+# ML deps — commented out for Phase 0 to keep image small and build fast.
+# Uncomment before Phase 5 (citizen reporting / AI pipeline):
+# transformers>=4.48.0
+# Pillow>=11.0.0
+# torch>=2.6.0 --index-url https://download.pytorch.org/whl/cpu
+# ultralytics>=8.0.0

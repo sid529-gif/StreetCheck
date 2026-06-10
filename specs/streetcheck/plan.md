@@ -17,6 +17,7 @@ StreetCheck is a civic road safety intelligence platform for Hyderabad that assi
 **Language/Version**: TypeScript 5.x (strict) for `client/`, `server/`, `shared/`; Python 3.11 for `ai-service/`
 
 **Primary Dependencies**:
+
 - Frontend: React 18, Vite, react-leaflet, Leaflet, Zustand, React Query, React Router v6, Tailwind CSS
 - Backend: Express.js, Prisma ORM, `node-cron`, `graphology`, `graphology-shortest-path`, `jsonwebtoken`, `@anthropic-ai/sdk`, `cloudinary`
 - AI Service: FastAPI, `anthropic`, `transformers` (HuggingFace), `torch`, `ultralytics` (YOLOv8), Pillow
@@ -250,38 +251,38 @@ CREATE TABLE data_refresh_log (
 
 ### Segments
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/api/segments` | Fetch segments by bounding box (`?bbox=minLng,minLat,maxLng,maxLat`). Returns GeoJSON FeatureCollection. |
-| `GET` | `/api/segments/:id` | Fetch single segment with full score breakdown and active reports |
+| Method | Path                | Description                                                                                              |
+| ------ | ------------------- | -------------------------------------------------------------------------------------------------------- |
+| `GET`  | `/api/segments`     | Fetch segments by bounding box (`?bbox=minLng,minLat,maxLng,maxLat`). Returns GeoJSON FeatureCollection. |
+| `GET`  | `/api/segments/:id` | Fetch single segment with full score breakdown and active reports                                        |
 
 ### Reports
 
-| Method | Path | Description |
-|--------|------|-------------|
+| Method | Path           | Description                                                                                                      |
+| ------ | -------------- | ---------------------------------------------------------------------------------------------------------------- |
 | `POST` | `/api/reports` | Submit a hazard report. Body: `{ segmentId, hazardType, description?, photoUrl?, confirmedType, reporterToken }` |
-| `GET` | `/api/reports` | Fetch active reports by bbox (`?bbox=...`). Returns report pins for map overlay |
+| `GET`  | `/api/reports` | Fetch active reports by bbox (`?bbox=...`). Returns report pins for map overlay                                  |
 
 ### Routes
 
-| Method | Path | Description |
-|--------|------|-------------|
+| Method | Path          | Description                                                                                                                     |
+| ------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------- |
 | `POST` | `/api/routes` | Compute route options. Body: `{ origin: { lat, lng }, destination: { lat, lng } }`. Returns `{ fastest: Route, safest: Route }` |
 
 ### AI
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `POST` | `/api/ai/assistant` | Conversational query. Body: `{ message: string, contextSegmentIds?: string[] }` |
-| `POST` | `/api/ai/summary` | Area summary. Body: `{ segmentId: string }` → returns 2-line summary |
+| Method | Path                  | Description                                                                                       |
+| ------ | --------------------- | ------------------------------------------------------------------------------------------------- |
+| `POST` | `/api/ai/assistant`   | Conversational query. Body: `{ message: string, contextSegmentIds?: string[] }`                   |
+| `POST` | `/api/ai/summary`     | Area summary. Body: `{ segmentId: string }` → returns 2-line summary                              |
 | `POST` | `/api/ai/explanation` | Route explanation. Body: `{ fastestRoute: Route, safestRoute: Route }` → returns explanation text |
 
 ### AI Micro-Service (internal)
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `POST` | `/classify` | NLP zero-shot. Body: `{ text: string }` → `{ hazardType, confidence }` |
-| `POST` | `/detect` | CV hazard detection. Body: `{ imageUrl: string }` → `{ hazardType, confidence, fallbackUsed }` |
+| Method | Path        | Description                                                                                    |
+| ------ | ----------- | ---------------------------------------------------------------------------------------------- |
+| `POST` | `/classify` | NLP zero-shot. Body: `{ text: string }` → `{ hazardType, confidence }`                         |
+| `POST` | `/detect`   | CV hazard detection. Body: `{ imageUrl: string }` → `{ hazardType, confidence, fallbackUsed }` |
 
 ---
 

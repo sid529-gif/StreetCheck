@@ -1,5 +1,5 @@
 ---
-description: "Task list for StreetCheck v1 implementation — 2-day hackathon sprint"
+description: 'Task list for StreetCheck v1 implementation — 2-day hackathon sprint'
 ---
 
 # Tasks: StreetCheck v1
@@ -54,7 +54,7 @@ description: "Task list for StreetCheck v1 implementation — 2-day hackathon sp
 
 ## Phase 3: User Story 2 — Safety Heatmap View (P2) 🗺️
 
-> *Note: US2 (heatmap) is implemented before US1 (routing) because the map is the prerequisite visual layer for everything else.*
+> _Note: US2 (heatmap) is implemented before US1 (routing) because the map is the prerequisite visual layer for everything else._
 
 **Goal**: Map loads with colour-coded road segments; tapping a segment shows its score breakdown.
 
@@ -171,23 +171,23 @@ description: "Task list for StreetCheck v1 implementation — 2-day hackathon sp
 
 ### Day 1 Execution Plan
 
-| Time | Phases |
-|------|--------|
-| 9:00–11:00 | Phase 1 (Setup) + Phase 2 start (Overpass seed) |
+| Time        | Phases                                                         |
+| ----------- | -------------------------------------------------------------- |
+| 9:00–11:00  | Phase 1 (Setup) + Phase 2 start (Overpass seed)                |
 | 11:00–13:00 | Phase 2 completion (MoRTH + HYDRAA ingestion + scoring engine) |
-| 13:00–15:00 | Phase 3 — Heatmap API + basic map render |
-| 15:00–18:00 | Phase 3 completion — Segment detail card |
-| 18:00–21:00 | Phase 4 — Routing graph + route comparison panel |
+| 13:00–15:00 | Phase 3 — Heatmap API + basic map render                       |
+| 15:00–18:00 | Phase 3 completion — Segment detail card                       |
+| 18:00–21:00 | Phase 4 — Routing graph + route comparison panel               |
 
 ### Day 2 Execution Plan
 
-| Time | Phases |
-|------|--------|
-| 9:00–11:00 | Phase 5 start — Report modal + icon grid |
+| Time        | Phases                                                |
+| ----------- | ----------------------------------------------------- |
+| 9:00–11:00  | Phase 5 start — Report modal + icon grid              |
 | 11:00–13:00 | Phase 5 completion — Photo upload + CV pipeline + NLP |
-| 13:00–15:00 | Phase 6 — Claude assistant + segment summaries |
-| 15:00–17:00 | Phase 7 — Polish, mobile, demo data |
-| 17:00–18:00 | Demo rehearsal + edge cases |
+| 13:00–15:00 | Phase 6 — Claude assistant + segment summaries        |
+| 15:00–17:00 | Phase 7 — Polish, mobile, demo data                   |
+| 17:00–18:00 | Demo rehearsal + edge cases                           |
 
 ### Parallel Opportunities
 
