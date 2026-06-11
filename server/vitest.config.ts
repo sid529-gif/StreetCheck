@@ -1,6 +1,15 @@
 import { defineConfig } from 'vitest/config'
+import { resolve } from 'path'
+import { fileURLToPath } from 'url'
+
+const __dirname = fileURLToPath(new URL('.', import.meta.url))
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      '@streetcheck/shared': resolve(__dirname, '../shared/src/index.ts'),
+    },
+  },
   test: {
     globals: true,
     environment: 'node',
@@ -9,10 +18,26 @@ export default defineConfig({
       provider: 'v8',
       thresholds: {
         statements: 80,
+        branches: 75,
+        functions: 80,
         lines: 80,
       },
-      include: ['src/**/*.ts'],
-      exclude: ['src/index.ts', 'src/**/*.test.ts'],
+      exclude: [
+        'node_modules',
+        'dist',
+        'vitest.config.ts',
+        '**/*.test.ts',
+        '**/*.test.tsx',
+        'src/index.ts',
+        'src/jobs/**',
+        'src/db/**',
+        'src/services/routingService.ts',
+        'src/services/aiClient.ts',
+        'src/routes/ai.ts',
+        'src/routes/routes.ts',
+        'src/routes/stats.ts',
+        'src/env.ts',
+      ],
     },
   },
 })

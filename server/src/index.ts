@@ -1,85 +1,116 @@
 import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
+import rateLimit from 'express-rate-limit'
+import winston from 'winston'
+import { env } from './env.js'
+
+// ── Logger ────────────────────────────────────────────────────────────────────
+
+export const logger = winston.createLogger({
+  level: env.NODE_ENV === 'production' ? 'info' : 'debug',
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.errors({ stack: true }),
+    env.NODE_ENV === 'production'
+      ? winston.format.json()
+      : winston.format.combine(winston.format.colorize({ all: true }), winston.format.simple())
+  ),
+  transports: [new winston.transports.Console()],
+})
+
+// ── App ───────────────────────────────────────────────────────────────────────
 
 const app = express()
-const PORT = Number(process.env['PORT'] ?? 5000)
-const CLIENT_URL = process.env['CLIENT_URL'] ?? 'http://localhost:5173'
 
-// ── Middleware ──────────────────────────────────────────────────────────────
+// ── Middleware ────────────────────────────────────────────────────────────────
+
 app.use(helmet())
-app.use(cors({ origin: CLIENT_URL, credentials: true }))
+app.use(cors({ origin: env.CLIENT_URL, credentials: true }))
 app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true }))
 
-// ── Health check ────────────────────────────────────────────────────────────
+app.use((req, _res, next) => {
+  logger.debug(`${req.method} ${req.path}`)
+  next()
+})
+
+// Global rate limiter — 200 req / 15 min per IP
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'RATE_LIMITED', message: 'Too many requests, please try again later.' },
+})
+app.use(globalLimiter)
+
+// ── Routes ────────────────────────────────────────────────────────────────────
+
+import segmentsRouter from './routes/segments.js'
+import reportsRouter from './routes/reports.js'
+import routesRouter from './routes/routes.js'
+import aiRouter from './routes/ai.js'
+import statsRouter from './routes/stats.js'
+
+app.use('/api/segments', segmentsRouter)
+app.use('/api/reports', reportsRouter)
+app.use('/api/routes', routesRouter)
+app.use('/api/ai', aiRouter)
+app.use('/api/stats', statsRouter)
+
+// ── Health check ──────────────────────────────────────────────────────────────
+
+app.get('/api/health', (_req, res) => {
+  res.json({
+    status: 'ok',
+    service: 'streetcheck-api',
+    version: '0.1.0',
+    timestamp: new Date().toISOString(),
+  })
+})
+
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', service: 'streetcheck-api', timestamp: new Date().toISOString() })
 })
 
-// ── Placeholder API routes (replaced in Phase 2+) ──────────────────────────
-app.get('/api/segments', (_req, res) => {
-  res.json({ type: 'FeatureCollection', features: [], meta: { count: 0, phase: '0-scaffold' } })
-})
+// ── 404 ───────────────────────────────────────────────────────────────────────
 
-app.get('/api/segments/:id', (_req, res) => {
-  res
-    .status(404)
-    .json({ error: 'SEGMENT_NOT_FOUND', message: 'Phase 0 scaffold — segments not yet seeded' })
-})
-
-app.post('/api/reports', (_req, res) => {
-  res.status(501).json({
-    error: 'NOT_IMPLEMENTED',
-    message: 'Phase 0 scaffold — reports endpoint coming in Phase 5',
-  })
-})
-
-app.get('/api/reports', (_req, res) => {
-  res.json({ type: 'FeatureCollection', features: [], meta: { count: 0, phase: '0-scaffold' } })
-})
-
-app.post('/api/routes', (_req, res) => {
-  res
-    .status(501)
-    .json({ error: 'NOT_IMPLEMENTED', message: 'Phase 0 scaffold — routing coming in Phase 4' })
-})
-
-app.post('/api/ai/assistant', (_req, res) => {
-  res.status(501).json({
-    error: 'NOT_IMPLEMENTED',
-    message: 'Phase 0 scaffold — AI assistant coming in Phase 6',
-  })
-})
-
-app.post('/api/ai/summary', (_req, res) => {
-  res
-    .status(501)
-    .json({ error: 'NOT_IMPLEMENTED', message: 'Phase 0 scaffold — AI summary coming in Phase 6' })
-})
-
-app.post('/api/ai/explanation', (_req, res) => {
-  res.status(501).json({
-    error: 'NOT_IMPLEMENTED',
-    message: 'Phase 0 scaffold — AI explanation coming in Phase 4',
-  })
-})
-
-// ── 404 catch-all ───────────────────────────────────────────────────────────
 app.use((_req, res) => {
   res.status(404).json({ error: 'NOT_FOUND', message: 'Route not found' })
 })
 
-// ── Global error handler ────────────────────────────────────────────────────
+// ── Global error handler ──────────────────────────────────────────────────────
+
 app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  console.error('[server error]', err.message)
+  logger.error('Unhandled error', { error: err.message, stack: err.stack })
   res.status(500).json({ error: 'INTERNAL_ERROR', message: 'An unexpected error occurred' })
 })
 
-// ── Start ────────────────────────────────────────────────────────────────────
-app.listen(PORT, () => {
-  console.log(`[streetcheck-api] listening on http://localhost:${PORT}`)
-  console.log(`[streetcheck-api] health → http://localhost:${PORT}/health`)
+// ── Start ─────────────────────────────────────────────────────────────────────
+
+async function start(): Promise<void> {
+  // Start cron jobs
+  const { startOverpassJob } = await import('./jobs/overpassJob.js')
+  const { startReportExpiryJob } = await import('./jobs/reportExpiryJob.js')
+  startOverpassJob()
+  startReportExpiryJob()
+
+  // Warm up routing graph in background (don't block startup)
+  import('./services/routingService.js')
+    .then(({ buildRoutingGraph }) => buildRoutingGraph())
+    .catch((err: unknown) => logger.warn('[startup] Routing graph build failed', { err }))
+
+  app.listen(env.PORT, () => {
+    logger.info(`[streetcheck-api] listening on http://localhost:${env.PORT}`)
+    logger.info(`[streetcheck-api] health → http://localhost:${env.PORT}/api/health`)
+    logger.info(`[streetcheck-api] NODE_ENV=${env.NODE_ENV}`)
+  })
+}
+
+start().catch((err: unknown) => {
+  logger.error('Fatal startup error', { err })
+  process.exit(1)
 })
 
 export default app

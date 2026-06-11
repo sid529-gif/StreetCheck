@@ -1,10 +1,9 @@
 import { z } from 'zod'
-import { RouteSchema } from './route.js'
 
 // ── AI Assistant ─────────────────────────────────────────────────────────────
 export const AssistantRequestSchema = z.object({
-  message: z.string().min(1).max(500),
-  contextSegmentIds: z.array(z.string()).max(20).optional(),
+  question: z.string().min(1).max(500),
+  bbox: z.tuple([z.number(), z.number(), z.number(), z.number()]).optional(),
 })
 export type AssistantRequest = z.infer<typeof AssistantRequestSchema>
 
@@ -29,8 +28,8 @@ export type SummaryResponse = z.infer<typeof SummaryResponseSchema>
 
 // ── AI Route Explanation ─────────────────────────────────────────────────────
 export const ExplanationRequestSchema = z.object({
-  fastestRoute: RouteSchema,
-  safestRoute: RouteSchema,
+  fastestSegments: z.array(z.string()),
+  safestSegments: z.array(z.string()),
 })
 export type ExplanationRequest = z.infer<typeof ExplanationRequestSchema>
 

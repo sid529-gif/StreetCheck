@@ -1,87 +1,95 @@
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["postgresqlExtensions"]
+  provider = "prisma-client-js"
 }
 
 datasource db {
-  provider   = "postgresql"
-  url        = env("DATABASE_URL")
-  extensions = [postgis]
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 // ── Road Segments ─────────────────────────────────────────────────────────────
-// Geometry column (LINESTRING 4326) is managed via raw SQL / PostGIS.
-// Use $queryRaw for all spatial queries — Prisma does not natively support PostGIS types.
+// geometry is stored as a GeoJSON LineString object (Json column).
+// For spatial bbox queries use $queryRaw with PostGIS — see server/src/db/geoQueries.ts
 model RoadSegment {
-  segmentId         String   @id @map("segment_id")
-  osmWayId          BigInt?  @map("osm_way_id")
-  name              String?
+  id               String   @id @default(cuid())
+  osmWayId         BigInt   @unique @map("osm_way_id")
+  name             String?
+  geometry         Json     // GeoJSON LineString { type, coordinates }
+  bbox             Json     // { minLng, minLat, maxLng, maxLat }
 
-  // Safety score inputs — all normalised to [0.0, 1.0]
-  lightingScore     Float    @default(0.5)  @map("lighting_score")
-  accidentRate      Float    @default(0.0)  @map("accident_rate")
-  floodRisk         Float    @default(0.0)  @map("flood_risk")
-  surfaceQuality    Float    @default(0.5)  @map("surface_quality")
-  walkabilityScore  Float    @default(0.5)  @map("walkability_score")
+  // Score dimensions — all normalised to [0.0, 1.0]
+  lightingScore    Float    @default(0.5)   @map("lighting_score")
+  accidentRate     Float    @default(0.1)   @map("accident_rate")
+  floodRisk        Float    @default(0.1)   @map("flood_risk")
+  surfaceQuality   Float    @default(0.7)   @map("surface_quality")
+  walkabilityScore Float    @default(0.5)   @map("walkability_score")
 
-  // Computed columns — set by DB trigger; read-only via Prisma
-  // safety_score and safety_band are GENERATED ALWAYS columns in Postgres
-  // Access them via $queryRaw when needed
+  // Computed — updated by scoringEngine after each refresh or report
+  safetyScore      Float    @default(0.0)   @map("safety_score")
+  safetyBand       String   @default("amber") @map("safety_band") // green | amber | red
+  scoringVersion   Int      @default(1)     @map("scoring_version")
 
-  // Metadata
-  scoringVersion    Int      @default(1)    @map("scoring_version")
-  activeReportCount Int      @default(0)    @map("active_report_count")
-  lastUpdated       DateTime @default(now()) @updatedAt @map("last_updated")
-  dataSources       String[] @default([])   @map("data_sources")
+  // OSM tag cache
+  osmLit           String?  @map("osm_lit")       // yes | no | 24/7 | null
+  osmSurface       String?  @map("osm_surface")   // asphalt | unpaved | etc
+  osmHighway       String?  @map("osm_highway")   // primary | residential | etc
+  osmFootway       String?  @map("osm_footway")   // yes | no | null
+  osmSidewalk      String?  @map("osm_sidewalk")  // yes | both | left | right | no | null
 
-  reports HazardReport[]
+  activeReports    Int      @default(0) @map("active_reports")
+  reports          HazardReport[]
 
+  lastOsmSync      DateTime @default(now()) @map("last_osm_sync")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt      @map("updated_at")
+
+  @@index([safetyScore], name: "road_segments_safety_score_idx")
+  @@index([safetyBand],  name: "road_segments_safety_band_idx")
   @@map("road_segments")
 }
 
 // ── Hazard Reports ────────────────────────────────────────────────────────────
 model HazardReport {
-  reportId        String   @id @default(uuid()) @map("report_id")
-  segmentId       String   @map("segment_id")
+  id             String   @id @default(cuid())
+  anonymousToken String   @map("anonymous_token") // client-generated UUID — no PII
+  segmentId      String   @map("segment_id")
+  segment        RoadSegment @relation(fields: [segmentId], references: [id], onDelete: Cascade)
 
-  hazardType      String   @map("hazard_type")
-  // Valid values: pothole | broken_streetlight | waterlogging |
-  //               construction_debris | stray_animals | broken_footpath | open_manhole
+  hazardType     String   @map("hazard_type")    // HazardType enum value
+  severityWeight Float    @default(0.5) @map("severity_weight") // 0.0–1.0
 
-  description     String?
-  photoUrl        String?  @map("photo_url")
-  aiSuggestedType String?  @map("ai_suggested_type")
-  confirmedType   String   @map("confirmed_type")
-  severityWeight  Float    @default(0.5) @map("severity_weight")
+  description    String?
+  photoUrl       String?  @map("photo_url")       // Cloudinary HTTPS URL
 
-  // Anonymous reporter token (client-generated UUID from localStorage)
-  reporterToken   String   @map("reporter_token")
+  // AI pipeline outputs
+  cvHazardType   String?  @map("cv_hazard_type")
+  cvConfidence   Float?   @map("cv_confidence")
+  nlpHazardType  String?  @map("nlp_hazard_type")
+  nlpConfidence  Float?   @map("nlp_confidence")
 
-  createdAt       DateTime @default(now()) @map("created_at")
-  isActive        Boolean  @default(true)  @map("is_active")
-  expiresAt       DateTime @map("expires_at")
+  lat            Float
+  lng            Float
 
-  segment RoadSegment @relation(fields: [segmentId], references: [segmentId], onDelete: Cascade)
+  expiresAt      DateTime @map("expires_at")      // default: createdAt + 72h
+  createdAt      DateTime @default(now()) @map("created_at")
 
-  @@index([segmentId, isActive], name: "hazard_reports_segment_active_idx")
-  @@index([expiresAt],           name: "hazard_reports_expires_idx")
+  @@index([segmentId],      name: "hazard_reports_segment_idx")
+  @@index([anonymousToken], name: "hazard_reports_token_idx")
+  @@index([expiresAt],      name: "hazard_reports_expires_idx")
   @@map("hazard_reports")
 }
 
 // ── Data Refresh Log ──────────────────────────────────────────────────────────
 model DataRefreshLog {
-  id              Int      @id @default(autoincrement())
-  source          String
-  // Valid values: osm | telangana | hydraa | morth | user_report
+  id         String   @id @default(cuid())
+  source     String   // osm_overpass | telangana_open | hydraa | morth
+  status     String   // success | failure | partial
+  recordsIn  Int      @default(0) @map("records_in")
+  recordsOut Int      @default(0) @map("records_out")
+  durationMs Int      @default(0) @map("duration_ms")
+  error      String?
+  createdAt  DateTime @default(now()) @map("created_at")
 
-  fetchedAt       DateTime @default(now()) @map("fetched_at")
-  segmentsUpdated Int      @default(0)     @map("segments_updated")
-  status          String
-  // Valid values: success | partial | failed
-
-  errorMessage    String?  @map("error_message")
-  durationMs      Int?     @map("duration_ms")
-
-  @@index([source, fetchedAt], name: "data_refresh_log_source_idx")
+  @@index([source, createdAt], name: "data_refresh_log_source_idx")
   @@map("data_refresh_log")
 }

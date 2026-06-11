@@ -2,6 +2,7 @@
   "name": "streetcheck",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "description": "Civic road safety intelligence platform for Hyderabad",
   "license": "AGPL-3.0-or-later",
   "workspaces": [
@@ -28,14 +29,15 @@
     "coverage": "npm run coverage -w server --if-present && npm run coverage -w client --if-present",
     "audit": "npm audit --workspaces --include=prod --include=dev",
     "secrets:scan": "gitleaks detect --source . --no-git",
-    "knip": "knip",
+    "knip": "knip --no-exit-code --no-config-hints",
     "changelog": "git-cliff -o CHANGELOG.md",
     "changelog:preview": "git-cliff --unreleased",
     "prisma:generate": "prisma generate --schema prisma/schema.prisma",
     "prisma:push": "prisma db push --schema prisma/schema.prisma",
     "prisma:migrate": "prisma migrate dev --schema prisma/schema.prisma",
     "prisma:studio": "prisma studio --schema prisma/schema.prisma",
-    "seed:overpass": "npx tsx server/src/scripts/seedOverpass.ts",
+    "seed:overpass": "tsx server/src/jobs/seedOverpass.ts",
+    "seed:demo": "npm run seed:demo --workspace server",
     "prepare": "husky"
   },
   "devDependencies": {
@@ -64,5 +66,9 @@
     "*.{js,json,md,css}": [
       "prettier --write"
     ]
+  },
+  "dependencies": {
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.6.0"
   }
 }

@@ -1,8 +1,7 @@
 """Pydantic schemas for the StreetCheck AI micro-service."""
 
-from pydantic import BaseModel, HttpUrl
+from pydantic import BaseModel, Field
 from typing import Optional
-
 
 HAZARD_TYPES = [
     "pothole",
@@ -14,27 +13,24 @@ HAZARD_TYPES = [
     "open_manhole",
 ]
 
-
 class ClassifyRequest(BaseModel):
-    text: str  # max 500 chars enforced by validator
-
+    text: str = Field(..., max_length=500)
 
 class ClassifyResponse(BaseModel):
-    suggestedType: Optional[str] = None
+    hazardType: Optional[str] = None
     confidence: float
-    allScores: dict[str, float]
+    severityWeight: Optional[float] = 0.5
     model: str
     processingMs: int
 
-
 class DetectRequest(BaseModel):
-    imageUrl: str  # Cloudinary HTTPS URL
-
+    photoUrl: Optional[str] = None
+    photo_url: Optional[str] = None
 
 class DetectResponse(BaseModel):
-    suggestedType: Optional[str] = None
+    hazardType: Optional[str] = None
     confidence: float
+    description: Optional[str] = None
     fallbackUsed: bool
     model: str
-    reasoning: Optional[str] = None
     processingMs: int

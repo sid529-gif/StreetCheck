@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "description": "StreetCheck Express backend",
-  "type": "commonjs",
+  "type": "module",
   "main": "src/index.ts",
   "scripts": {
     "dev": "tsx watch src/index.ts",
@@ -14,14 +14,23 @@
     "lint:fix": "eslint src --ext .ts --fix",
     "test": "vitest run",
     "test:watch": "vitest",
-    "coverage": "vitest run --coverage"
+    "coverage": "vitest run --coverage",
+    "prisma:generate": "prisma generate",
+    "prisma:push": "prisma db push",
+    "prisma:migrate": "prisma migrate dev",
+    "seed:overpass": "tsx src/jobs/seedOverpass.ts",
+    "seed:demo": "tsx src/jobs/seedDemoData.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.36.3",
     "@prisma/client": "^6.5.0",
+    "@streetcheck/shared": "*",
+    "axios": "^1.17.0",
     "cloudinary": "^2.5.1",
     "cors": "^2.8.5",
+    "dotenv": "^17.4.2",
     "express": "^4.21.2",
+    "express-rate-limit": "^8.5.2",
     "graphology": "^0.26.0",
     "graphology-shortest-path": "^2.1.0",
     "graphology-types": "^0.24.3",
@@ -30,9 +39,8 @@
     "multer": "^2.0.1",
     "node-cron": "^3.0.3",
     "node-fetch": "^3.3.2",
-    "winston": "^3.17.0",
-    "zod": "^3.24.2",
-    "@streetcheck/shared": "*"
+    "winston": "^3.19.0",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",

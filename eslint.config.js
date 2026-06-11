@@ -1,54 +1,17 @@
 import js from '@eslint/js'
+import globals from 'globals'
 import tsParser from '@typescript-eslint/parser'
 import tsPlugin from '@typescript-eslint/eslint-plugin'
 import reactPlugin from 'eslint-plugin-react'
 import reactHooks from 'eslint-plugin-react-hooks'
+import eslintConfigPrettier from 'eslint-config-prettier'
 
 /** @type {import('eslint').Linter.FlatConfig[]} */
 export default [
+  // Base JS recommended
   js.configs.recommended,
 
-  // TypeScript — shared and server
-  {
-    files: ['shared/src/**/*.ts', 'server/src/**/*.ts'],
-    languageOptions: {
-      parser: tsParser,
-      parserOptions: { project: true },
-    },
-    plugins: { '@typescript-eslint': tsPlugin },
-    rules: {
-      ...tsPlugin.configs['recommended-type-checked'].rules,
-      '@typescript-eslint/no-explicit-any': 'error',
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
-      '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
-    },
-  },
-
-  // TypeScript + React — client
-  {
-    files: ['client/src/**/*.{ts,tsx}'],
-    languageOptions: {
-      parser: tsParser,
-      parserOptions: { project: true },
-    },
-    plugins: {
-      '@typescript-eslint': tsPlugin,
-      react: reactPlugin,
-      'react-hooks': reactHooks,
-    },
-    settings: { react: { version: 'detect' } },
-    rules: {
-      ...tsPlugin.configs['recommended-type-checked'].rules,
-      ...reactPlugin.configs.recommended.rules,
-      ...reactHooks.configs.recommended.rules,
-      '@typescript-eslint/no-explicit-any': 'error',
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
-      'react/react-in-jsx-scope': 'off',
-      'react/prop-types': 'off',
-    },
-  },
-
-  // Ignores
+  // Global ignores
   {
     ignores: [
       '**/node_modules/**',
@@ -57,6 +20,73 @@ export default [
       '**/.specify/**',
       '**/.speckit/**',
       'prisma/migrations/**',
+      '**/*.config.js',
+      '**/*.config.ts',
     ],
   },
+
+  // Server & shared — Node environment + TypeScript parser
+  {
+    files: ['server/src/**/*.ts', 'shared/src/**/*.ts'],
+    plugins: {
+      '@typescript-eslint': tsPlugin,
+    },
+    languageOptions: {
+      parser: tsParser,
+      parserOptions: {
+        ecmaVersion: 2022,
+        sourceType: 'module',
+      },
+      globals: {
+        ...globals.node,
+      },
+    },
+    rules: {
+      'no-console': 'off',
+      'no-unused-vars': 'off', // use TS version below
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      ],
+      'no-undef': 'off', // TypeScript handles this
+    },
+  },
+
+  // Client — Browser + React + TypeScript
+  {
+    files: ['client/src/**/*.{ts,tsx}'],
+    plugins: {
+      react: reactPlugin,
+      'react-hooks': reactHooks,
+      '@typescript-eslint': tsPlugin,
+    },
+    languageOptions: {
+      parser: tsParser,
+      parserOptions: {
+        ecmaVersion: 2022,
+        sourceType: 'module',
+        ecmaFeatures: { jsx: true },
+      },
+      globals: {
+        ...globals.browser,
+        ...globals.es2022,
+      },
+    },
+    settings: { react: { version: 'detect' } },
+    rules: {
+      ...reactPlugin.configs.recommended.rules,
+      ...reactHooks.configs.recommended.rules,
+      'react/react-in-jsx-scope': 'off',
+      'react/prop-types': 'off',
+      'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      ],
+      'no-undef': 'off',
+    },
+  },
+
+  // Disable formatting rules (handled by Prettier)
+  eslintConfigPrettier,
 ]

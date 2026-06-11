@@ -1,0 +1,29 @@
+title = "StreetCheck Gitleaks Config"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "anthropic-api-key"
+description = "Anthropic API Key"
+regex = '''sk-ant-[a-zA-Z0-9\-_]{32,}'''
+tags = ["anthropic", "ai", "key"]
+
+[[rules]]
+id = "cloudinary-url"
+description = "Cloudinary URL with credentials"
+regex = '''cloudinary://[0-9]+:[a-zA-Z0-9_\-]+@[a-zA-Z0-9]+'''
+tags = ["cloudinary", "key"]
+
+[allowlist]
+description = "Global allowlist"
+paths = [
+  '''.env.example''',
+  '''CHANGELOG.md''',
+  '''USER_MANUAL.md''',
+]
+regexes = [
+  '''sk-ant-\.\.\."""''',          # placeholder in docs
+  '''your_api_key_here''',
+  '''changeme''',
+]

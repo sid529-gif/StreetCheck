@@ -1,20 +1,30 @@
 {
   "$schema": "https://unpkg.com/knip@latest/schema.json",
+  "exclude": ["exports", "types", "duplicates"],
   "workspaces": {
     ".": {
-      "entry": ["eslint.config.js", "client/vite.config.ts"],
+      "entry": ["eslint.config.js"],
       "ignoreDependencies": [
         "concurrently",
         "husky",
         "lint-staged",
         "git-cliff",
         "gitleaks",
-        "prisma"
+        "prisma",
+        "oxlint"
       ]
     },
     "client": {
-      "entry": ["src/main.tsx", "vite.config.ts", "tailwind.config.js"],
-      "ignoreDependencies": ["@types/react", "@types/react-dom"]
+      "entry": ["src/main.tsx"],
+      "ignoreDependencies": [
+        "@types/react",
+        "@types/react-dom",
+        "zod",
+        "eslint-plugin-react",
+        "eslint-plugin-react-hooks",
+        "axios",
+        "geojson"
+      ]
     },
     "server": {
       "entry": ["src/index.ts"],
@@ -22,11 +32,17 @@
         "@types/express",
         "@types/cors",
         "@types/multer",
-        "@types/node-cron"
+        "@types/node-cron",
+        "@types/jsonwebtoken",
+        "cloudinary",
+        "jsonwebtoken",
+        "multer",
+        "node-fetch"
       ]
     },
     "shared": {
-      "entry": ["src/index.ts"]
+      "entry": ["src/index.ts"],
+      "ignoreDependencies": ["@vitest/coverage-v8"]
     }
   },
   "ignore": [

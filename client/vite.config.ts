@@ -5,8 +5,8 @@ import { resolve } from 'path'
 // GitHub Pages hosts at /StreetCheck/ — set base in CI via VITE_BASE_URL
 // Locally it stays as '/'
 export default defineConfig({
+  base: '/StreetCheck/',
   plugins: [react()],
-  base: process.env['VITE_BASE_URL'] ?? '/',
   resolve: {
     alias: {
       '@streetcheck/shared': resolve(__dirname, '../shared/src'),
