@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation, Trans } from 'react-i18next'
 import { api, type AppStats } from '../services/api.js'
 import Navbar from '../components/navigation/Navbar.js'
 
 export default function LandingPage() {
+  const { t } = useTranslation()
   const [stats, setStats] = useState<AppStats>({
     segmentCount: 70124,
     activeReports: 12,
@@ -33,19 +35,21 @@ export default function LandingPage() {
         <div className="lg:col-span-7 space-y-8">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#f59e0b]/10 border border-[#f59e0b]/20 text-[#f59e0b] text-xs font-bold uppercase tracking-wider">
             <span className="w-2 h-2 rounded-full bg-[#f59e0b] animate-ping" />
-            Live Hyderabad Intelligence
+            {t('landing.liveIntel')}
           </div>
 
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight leading-none uppercase">
-            Road Safety <br className="hidden md:inline" />
-            Intelligence <br />
-            <span className="text-[#f59e0b]">For Hyderabad</span>
+            {t('landing.heroTitle')} <br className="hidden md:inline" />
+            {t('landing.heroTitleMid')} <br />
+            <span className="text-[#f59e0b]">{t('landing.heroTitleSub')}</span>
           </h1>
 
           <p className="text-lg text-gray-400 max-w-xl leading-relaxed">
-            Google Maps shows the fastest route. <strong className="text-white">StreetCheck</strong>{' '}
-            shows the safest one. Bypass waterlogged underpasses, dark streets, and pothole-ridden
-            lanes.
+            <Trans i18nKey="landing.heroDesc">
+              Google Maps shows the fastest route.{' '}
+              <strong className="text-white">StreetCheck</strong> shows the safest one. Bypass
+              waterlogged underpasses, dark streets, and pothole-ridden lanes.
+            </Trans>
           </p>
 
           <div className="flex flex-wrap gap-4 pt-2">
@@ -53,13 +57,13 @@ export default function LandingPage() {
               to="/map"
               className="px-8 py-4 bg-[#f59e0b] hover:bg-[#d97706] text-[#0a0f1a] font-extrabold rounded-xl text-base transition-all duration-200 shadow-xl hover:shadow-[0_0_25px_rgba(245,158,11,0.3)] hover:-translate-y-0.5 active:translate-y-0 active:scale-95"
             >
-              Open Safety Map
+              {t('landing.openSafetyMap')}
             </Link>
             <a
               href="#how-it-works"
               className="px-8 py-4 bg-[#111827] border border-[#1f2937] hover:bg-gray-800 text-gray-300 font-bold rounded-xl text-base transition-all duration-200 hover:-translate-y-0.5"
             >
-              How it works ↓
+              {t('landing.howItWorksLink')}
             </a>
           </div>
 
@@ -70,23 +74,26 @@ export default function LandingPage() {
                 {loadingStats ? '...' : stats.segmentCount.toLocaleString()}
               </div>
               <div className="text-xs text-gray-500 font-bold uppercase tracking-wider mt-1">
-                Roads Scored
+                {t('landing.stats.roadsScored')}
               </div>
             </div>
             <div>
               <div className="text-2xl md:text-3xl font-black text-[#f59e0b] flex items-center gap-1.5">
-                5 <span className="text-xs font-semibold text-gray-400">layers</span>
+                5{' '}
+                <span className="text-xs font-semibold text-gray-400">
+                  {t('landing.stats.layers')}
+                </span>
               </div>
               <div className="text-xs text-gray-500 font-bold uppercase tracking-wider mt-1">
-                Safety Layers
+                {t('landing.stats.safetyLayers')}
               </div>
             </div>
             <div>
               <div className="text-2xl md:text-3xl font-black text-[#10b981]">
-                {loadingStats ? '...' : stats.activeReports} active
+                {loadingStats ? '...' : stats.activeReports} {t('landing.stats.active')}
               </div>
               <div className="text-xs text-gray-500 font-bold uppercase tracking-wider mt-1">
-                Citizen Hazards
+                {t('landing.stats.citizenHazards')}
               </div>
             </div>
           </div>
@@ -105,11 +112,11 @@ export default function LandingPage() {
                 <div className="flex items-center gap-2">
                   <div className="w-2.5 h-2.5 rounded-full bg-[#10b981] animate-pulse" />
                   <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">
-                    Jubilee Hills Heatmap
+                    {t('landing.fakeMap.title')}
                   </span>
                 </div>
                 <span className="text-[10px] text-[#f59e0b] font-mono font-bold">
-                  Composite Active
+                  {t('landing.fakeMap.compositeActive')}
                 </span>
               </div>
 
@@ -208,12 +215,12 @@ export default function LandingPage() {
 
               {/* Mini-map Card Footer */}
               <div className="bg-[#0a0f1a]/60 border border-[#1f2937] rounded-xl p-3 flex justify-between items-center text-xs">
-                <span className="text-gray-400">Hover elements to inspect details</span>
+                <span className="text-gray-400">{t('landing.fakeMap.hoverToInspect')}</span>
                 <Link
                   to="/map"
                   className="text-[#f59e0b] hover:underline font-bold flex items-center gap-1"
                 >
-                  Launch Map &rarr;
+                  {t('landing.fakeMap.launchMap')} &rarr;
                 </Link>
               </div>
             </div>
@@ -226,15 +233,12 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-6 space-y-12">
           <div className="text-center max-w-2xl mx-auto space-y-4">
             <h2 className="text-xs font-black text-[#f59e0b] tracking-widest uppercase">
-              Multidimensional Scores
+              {t('landing.features.preTitle')}
             </h2>
             <p className="text-3xl font-black uppercase text-white tracking-tight">
-              Safety Beyond Just Routing
+              {t('landing.features.title')}
             </p>
-            <p className="text-sm text-gray-400">
-              Unlike generic maps, StreetCheck evaluates every city street along five distinct
-              safety verticals derived from verified municipal, geo, and crowd-sourced databases.
-            </p>
+            <p className="text-sm text-gray-400">{t('landing.features.desc')}</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
@@ -242,9 +246,11 @@ export default function LandingPage() {
             <div className="bg-[#111827] border border-[#1f2937] rounded-2xl p-6 flex flex-col justify-between hover:border-[#f59e0b]/30 transition-all duration-300">
               <div className="space-y-4">
                 <div className="text-3xl">💡</div>
-                <h3 className="text-lg font-black uppercase text-white tracking-wider">Lighting</h3>
+                <h3 className="text-lg font-black uppercase text-white tracking-wider">
+                  {t('landing.features.lighting.title')}
+                </h3>
                 <p className="text-xs text-gray-400 leading-relaxed">
-                  Illumination density and network lighting statuses mapped from OpenStreetMap tags.
+                  {t('landing.features.lighting.desc')}
                 </p>
               </div>
               <div className="mt-6">
@@ -252,8 +258,8 @@ export default function LandingPage() {
                   <div className="h-full bg-gradient-to-r from-blue-700 to-amber-400 w-full" />
                 </div>
                 <div className="flex justify-between text-[9px] font-bold text-gray-500 mt-1.5 uppercase">
-                  <span>Dark</span>
-                  <span>Well Lit</span>
+                  <span>{t('landing.features.lighting.low')}</span>
+                  <span>{t('landing.features.lighting.high')}</span>
                 </div>
               </div>
             </div>
@@ -263,10 +269,10 @@ export default function LandingPage() {
               <div className="space-y-4">
                 <div className="text-3xl">🌊</div>
                 <h3 className="text-lg font-black uppercase text-white tracking-wider">
-                  Flood Risk
+                  {t('landing.features.flood.title')}
                 </h3>
                 <p className="text-xs text-gray-400 leading-relaxed">
-                  Vulnerability mapping derived from HYDRAA reports and low-lying stormwater logs.
+                  {t('landing.features.flood.desc')}
                 </p>
               </div>
               <div className="mt-6">
@@ -274,8 +280,8 @@ export default function LandingPage() {
                   <div className="h-full bg-gradient-to-r from-[#0d9488] to-[#ef4444] w-full" />
                 </div>
                 <div className="flex justify-between text-[9px] font-bold text-gray-500 mt-1.5 uppercase">
-                  <span>Low Risk</span>
-                  <span>High Risk</span>
+                  <span>{t('landing.features.flood.low')}</span>
+                  <span>{t('landing.features.flood.high')}</span>
                 </div>
               </div>
             </div>
@@ -285,11 +291,10 @@ export default function LandingPage() {
               <div className="space-y-4">
                 <div className="text-3xl">🛣️</div>
                 <h3 className="text-lg font-black uppercase text-white tracking-wider">
-                  Road Surface
+                  {t('landing.features.surface.title')}
                 </h3>
                 <p className="text-xs text-gray-400 leading-relaxed">
-                  Presence of potholes, broken concrete, or severe street cracking and municipal
-                  logs.
+                  {t('landing.features.surface.desc')}
                 </p>
               </div>
               <div className="mt-6">
@@ -297,8 +302,8 @@ export default function LandingPage() {
                   <div className="h-full bg-gradient-to-r from-[#ef4444] to-[#10b981] w-full" />
                 </div>
                 <div className="flex justify-between text-[9px] font-bold text-gray-500 mt-1.5 uppercase">
-                  <span>Severe Potholes</span>
-                  <span>Smooth</span>
+                  <span>{t('landing.features.surface.low')}</span>
+                  <span>{t('landing.features.surface.high')}</span>
                 </div>
               </div>
             </div>
@@ -308,10 +313,10 @@ export default function LandingPage() {
               <div className="space-y-4">
                 <div className="text-3xl">🚶</div>
                 <h3 className="text-lg font-black uppercase text-white tracking-wider">
-                  Walkability
+                  {t('landing.features.walkability.title')}
                 </h3>
                 <p className="text-xs text-gray-400 leading-relaxed">
-                  Paved sidewalks, clear pedestrian curbs, and footpath width coverage indicators.
+                  {t('landing.features.walkability.desc')}
                 </p>
               </div>
               <div className="mt-6">
@@ -319,8 +324,8 @@ export default function LandingPage() {
                   <div className="h-full bg-gradient-to-r from-gray-600 via-violet-600 to-indigo-600 w-full" />
                 </div>
                 <div className="flex justify-between text-[9px] font-bold text-gray-500 mt-1.5 uppercase">
-                  <span>No Footpath</span>
-                  <span>Premium Sidewalk</span>
+                  <span>{t('landing.features.walkability.low')}</span>
+                  <span>{t('landing.features.walkability.high')}</span>
                 </div>
               </div>
             </div>
@@ -330,11 +335,10 @@ export default function LandingPage() {
               <div className="space-y-4">
                 <div className="text-3xl">⚠️</div>
                 <h3 className="text-lg font-black uppercase text-white tracking-wider">
-                  Accident Rate
+                  {t('landing.features.accident.title')}
                 </h3>
                 <p className="text-xs text-gray-400 leading-relaxed">
-                  Historical accident hotspots compiled from MoRTH databases and black-spot
-                  coordinates.
+                  {t('landing.features.accident.desc')}
                 </p>
               </div>
               <div className="mt-6">
@@ -342,8 +346,8 @@ export default function LandingPage() {
                   <div className="h-full bg-gradient-to-r from-[#10b981] via-amber-400 to-[#ef4444] w-full" />
                 </div>
                 <div className="flex justify-between text-[9px] font-bold text-gray-500 mt-1.5 uppercase">
-                  <span>Zero Crashes</span>
-                  <span>High Accident</span>
+                  <span>{t('landing.features.accident.low')}</span>
+                  <span>{t('landing.features.accident.high')}</span>
                 </div>
               </div>
             </div>
@@ -355,10 +359,10 @@ export default function LandingPage() {
       <section id="how-it-works" className="py-24 max-w-7xl mx-auto px-6 space-y-16">
         <div className="text-center max-w-xl mx-auto space-y-4">
           <h2 className="text-xs font-black text-[#f59e0b] tracking-widest uppercase">
-            3 Simple Steps
+            {t('landing.howItWorks.preTitle')}
           </h2>
           <p className="text-3xl font-black uppercase text-white tracking-tight">
-            How StreetCheck Operates
+            {t('landing.howItWorks.title')}
           </p>
         </div>
 
@@ -368,10 +372,11 @@ export default function LandingPage() {
             <div className="w-12 h-12 rounded-2xl bg-[#f59e0b]/10 border border-[#f59e0b]/20 flex items-center justify-center text-[#f59e0b] font-black text-xl mx-auto mb-6">
               1
             </div>
-            <h3 className="text-lg font-extrabold uppercase text-white mb-2">View Heatmap</h3>
+            <h3 className="text-lg font-extrabold uppercase text-white mb-2">
+              {t('landing.howItWorks.step1.title')}
+            </h3>
             <p className="text-xs text-gray-400 leading-relaxed max-w-xs mx-auto">
-              See Hyderabad roads color-coded live on our Leaflet map based on multi-dimensional
-              safety scores.
+              {t('landing.howItWorks.step1.desc')}
             </p>
           </div>
 
@@ -383,10 +388,11 @@ export default function LandingPage() {
             <div className="w-12 h-12 rounded-2xl bg-[#f59e0b]/10 border border-[#f59e0b]/20 flex items-center justify-center text-[#f59e0b] font-black text-xl mx-auto mb-6">
               2
             </div>
-            <h3 className="text-lg font-extrabold uppercase text-white mb-2">Compare Routes</h3>
+            <h3 className="text-lg font-extrabold uppercase text-white mb-2">
+              {t('landing.howItWorks.step2.title')}
+            </h3>
             <p className="text-xs text-gray-400 leading-relaxed max-w-xs mx-auto">
-              Get fastest vs safest paths calculated side-by-side using real-time graphs and Claude
-              AI explanations.
+              {t('landing.howItWorks.step2.desc')}
             </p>
           </div>
 
@@ -398,10 +404,11 @@ export default function LandingPage() {
             <div className="w-12 h-12 rounded-2xl bg-[#f59e0b]/10 border border-[#f59e0b]/20 flex items-center justify-center text-[#f59e0b] font-black text-xl mx-auto mb-6">
               3
             </div>
-            <h3 className="text-lg font-extrabold uppercase text-white mb-2">Report Hazard</h3>
+            <h3 className="text-lg font-extrabold uppercase text-white mb-2">
+              {t('landing.howItWorks.step3.title')}
+            </h3>
             <p className="text-xs text-gray-400 leading-relaxed max-w-xs mx-auto">
-              Tap directly on the map to flag broken lights, waterlogging, or potholed roads
-              instantly.
+              {t('landing.howItWorks.step3.desc')}
             </p>
           </div>
         </div>
@@ -412,25 +419,22 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
           <div>
             <h2 className="text-2xl font-black uppercase text-white tracking-tight">
-              Hyderabad&apos;s roads, scored for safety.
+              {t('landing.cta.title')}
             </h2>
-            <p className="text-sm text-gray-400 mt-1">
-              Open the safety map, select your route, and navigate the city with peace of mind.
-            </p>
+            <p className="text-sm text-gray-400 mt-1">{t('landing.cta.desc')}</p>
           </div>
           <Link
             to="/map"
             className="flex items-center gap-2 px-8 py-4 bg-[#f59e0b] hover:bg-[#d97706] text-[#0a0f1a] font-extrabold rounded-xl text-base transition-all duration-200 shadow-xl"
           >
-            Open Safety Map &rarr;
+            {t('landing.cta.button')} &rarr;
           </Link>
         </div>
       </section>
 
       {/* Footer */}
       <footer className="bg-[#050912] border-t border-[#1f2937] py-8 text-center text-xs text-gray-500">
-        &copy; {new Date().getFullYear()} StreetCheck Hyderabad. Built for the Swecha Hackathon
-        2026. Anonymous &amp; PII-Free.
+        {t('landing.footer', { year: new Date().getFullYear() })}
       </footer>
     </div>
   )

@@ -174,7 +174,7 @@ describe('POST /api/reports', () => {
     }
 
     res.statusCode = 200
-    vi.mocked(res.status).mockClear()
+    vi.mocked(res.status!).mockClear()
     await runRoute()
     expect(res.status).toHaveBeenCalledWith(429)
   })

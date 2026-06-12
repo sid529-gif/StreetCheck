@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useTranslation, Trans } from 'react-i18next'
 import type { HazardType } from '@streetcheck/shared'
 import { HazardIconGrid } from './HazardIconGrid.js'
 import { PhotoUploader } from './PhotoUploader.js'
@@ -14,6 +15,7 @@ interface ReportModalProps {
 }
 
 export function ReportModal({ segment, isOpen, onClose, onSuccess }: ReportModalProps) {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const anonymousToken = useSessionStore((state) => state.anonymousToken)
 
@@ -28,6 +30,37 @@ export function ReportModal({ segment, isOpen, onClose, onSuccess }: ReportModal
   const [aiSuggestedType, setAiSuggestedType] = useState<HazardType | null>(null)
   const [cvConfidence, setCvConfidence] = useState<number | null>(null)
   const [showGrid, setShowGrid] = useState(true)
+
+  // Debounced NLP hazard classification on description text change
+  useEffect(() => {
+    // Only run NLP if there isn't a photo suggestion active
+    if (photoUrl) return
+
+    const trimmed = description.trim()
+    if (!trimmed) {
+      setAiSuggestedType(null)
+      setCvConfidence(null)
+      return
+    }
+
+    const timer = setTimeout(async () => {
+      try {
+        const result = await api.classifyText(trimmed)
+        if (result.suggestedType) {
+          setAiSuggestedType(result.suggestedType)
+          setCvConfidence(result.confidence)
+          setHazardType((prev) => prev || result.suggestedType)
+        } else {
+          setAiSuggestedType(null)
+          setCvConfidence(null)
+        }
+      } catch (err) {
+        console.error('NLP text classification failed:', err)
+      }
+    }, 800)
+
+    return () => clearTimeout(timer)
+  }, [description, photoUrl])
 
   // Centroid of the segment for report coordinates
   const lat = (segment.bbox.minLat + segment.bbox.maxLat) / 2
@@ -53,7 +86,9 @@ export function ReportModal({ segment, isOpen, onClose, onSuccess }: ReportModal
       queryClient.invalidateQueries({ queryKey: ['reports'] })
 
       onSuccess(
-        `Success! Safety score recalculated: ${Math.round(data.updatedSegment.safetyScore * 100)}%`
+        t('map.reportModal.successMsg', {
+          score: Math.round(data.updatedSegment.safetyScore * 100),
+        })
       )
       onClose()
     },
@@ -81,16 +116,16 @@ export function ReportModal({ segment, isOpen, onClose, onSuccess }: ReportModal
         <div className="px-6 pb-4 border-b border-[#1f2937] flex items-center justify-between">
           <div>
             <h2 className="text-base font-black uppercase tracking-wider text-white">
-              Report Hazard
+              {t('map.reportModal.title')}
             </h2>
             <p className="text-xs text-gray-500 font-semibold truncate max-w-[280px] mt-0.5">
-              Near {segment.name || 'Unnamed Street'}
+              {t('map.reportModal.near', { name: segment.name || t('map.unnamedStreet') })}
             </p>
           </div>
           <button
             onClick={onClose}
             className="p-2.5 rounded-full hover:bg-gray-800 text-gray-400 hover:text-white transition-colors cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center"
-            aria-label="Cancel reporting"
+            aria-label={t('map.reportModal.cancel')}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -128,7 +163,7 @@ export function ReportModal({ segment, isOpen, onClose, onSuccess }: ReportModal
             <div className="flex flex-col items-center justify-center p-6 bg-[#1e2433] border border-[#1f2937] rounded-2xl space-y-3">
               <div className="h-6 w-6 border-3 border-[#f59e0b] border-t-transparent rounded-full animate-spin" />
               <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider animate-pulse">
-                Running AI Hazard Detection...
+                {t('map.reportModal.aiRunning')}
               </p>
             </div>
           )}
@@ -140,18 +175,34 @@ export function ReportModal({ segment, isOpen, onClose, onSuccess }: ReportModal
                 <span className="text-2xl mt-0.5">🤖</span>
                 <div className="flex-1">
                   <h3 className="text-xs font-black text-white uppercase tracking-wider mb-1">
-                    AI Hazard Recommendation
+                    {t('map.reportModal.aiTitle')}
                   </h3>
                   <p className="text-xs text-gray-400 leading-relaxed">
-                    AI detected:{' '}
-                    <span className="font-extrabold text-[#f59e0b] capitalize">
-                      {aiSuggestedType.replace(/_/g, ' ')}
-                    </span>{' '}
-                    with{' '}
-                    <span className="font-extrabold text-[#f59e0b]">
-                      {Math.round((cvConfidence || 0) * 100)}%
-                    </span>{' '}
-                    confidence. Is this correct?
+                    <Trans
+                      i18nKey="map.reportModal.aiDesc"
+                      values={{
+                        type: aiSuggestedType
+                          ? t('map.hazards.' + aiSuggestedType, {
+                              defaultValue: aiSuggestedType.replace(/_/g, ' '),
+                            })
+                          : '',
+                        confidence: Math.round((cvConfidence || 0) * 100),
+                      }}
+                    >
+                      AI detected:{' '}
+                      <span className="font-extrabold text-[#f59e0b] capitalize">
+                        {aiSuggestedType
+                          ? t('map.hazards.' + aiSuggestedType, {
+                              defaultValue: aiSuggestedType.replace(/_/g, ' '),
+                            })
+                          : ''}
+                      </span>{' '}
+                      with{' '}
+                      <span className="font-extrabold text-[#f59e0b]">
+                        {Math.round((cvConfidence || 0) * 100)}%
+                      </span>{' '}
+                      confidence. Is this correct?
+                    </Trans>
                   </p>
                 </div>
               </div>
@@ -166,7 +217,9 @@ export function ReportModal({ segment, isOpen, onClose, onSuccess }: ReportModal
                   disabled={mutation.isPending}
                   className="flex-1 min-h-[44px] flex items-center justify-center px-4 py-2.5 bg-[#f59e0b] hover:bg-[#d97706] disabled:bg-[#f59e0b]/50 disabled:cursor-not-allowed text-[#0a0f1a] font-extrabold rounded-xl text-xs uppercase tracking-wider transition-all shadow-md active:scale-95 cursor-pointer"
                 >
-                  {mutation.isPending ? 'Submitting...' : 'Yes, submit'}
+                  {mutation.isPending
+                    ? t('map.reportModal.submitting')
+                    : t('map.reportModal.aiSubmit')}
                 </button>
                 <button
                   type="button"
@@ -175,7 +228,7 @@ export function ReportModal({ segment, isOpen, onClose, onSuccess }: ReportModal
                   }}
                   className="flex-1 min-h-[44px] flex items-center justify-center px-4 py-2.5 bg-gray-800 hover:bg-gray-700 text-white font-extrabold rounded-xl text-xs uppercase tracking-wider border border-[#1f2937] transition-all active:scale-95 cursor-pointer"
                 >
-                  No, let me choose
+                  {t('map.reportModal.aiChoose')}
                 </button>
               </div>
             </div>
@@ -184,12 +237,12 @@ export function ReportModal({ segment, isOpen, onClose, onSuccess }: ReportModal
           {/* Description */}
           <div className="space-y-2">
             <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">
-              Add a note (optional)
+              {t('map.reportModal.noteLabel')}
             </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Provide extra details e.g., 'Right lane flooded' or 'broken cover'..."
+              placeholder={t('map.reportModal.notePlaceholder')}
               maxLength={500}
               rows={3}
               className="w-full rounded-2xl bg-[#1f2937] border border-[#2e3a52] p-3.5 text-xs text-white placeholder-gray-500 focus:border-[#f59e0b] focus:outline-none focus:ring-1 focus:ring-[#f59e0b] transition-colors"
@@ -199,7 +252,7 @@ export function ReportModal({ segment, isOpen, onClose, onSuccess }: ReportModal
           {/* Photo Uploader */}
           <div className="space-y-2">
             <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 block">
-              📷 Add photo
+              📷 {t('map.reportModal.photoLabel')}
             </label>
             <PhotoUploader
               onUploadStart={() => {
@@ -219,6 +272,9 @@ export function ReportModal({ segment, isOpen, onClose, onSuccess }: ReportModal
                     setCvConfidence(result.confidence)
                     setHazardType(result.suggestedType)
                     setShowGrid(false)
+                  } else {
+                    setAiSuggestedType(null)
+                    setCvConfidence(null)
                   }
                 } catch (err: any) {
                   console.error('Photo hazard detection failed:', err)
@@ -241,7 +297,7 @@ export function ReportModal({ segment, isOpen, onClose, onSuccess }: ReportModal
             type="button"
             className="w-full md:flex-1 h-12 md:py-3 bg-gray-800 border border-[#1f2937] hover:bg-gray-700 text-white font-extrabold rounded-xl text-xs uppercase tracking-wider transition-colors text-center cursor-pointer active:scale-95 flex items-center justify-center"
           >
-            Cancel
+            {t('map.reportModal.cancel')}
           </button>
           {(!photoUrl || !aiSuggestedType || showGrid) && (
             <button
@@ -254,7 +310,9 @@ export function ReportModal({ segment, isOpen, onClose, onSuccess }: ReportModal
                   : 'bg-[#f59e0b] hover:bg-[#d97706] text-[#0a0f1a] cursor-pointer active:scale-95'
               }`}
             >
-              {mutation.isPending ? 'Submitting...' : 'Submit Report'}
+              {mutation.isPending
+                ? t('map.reportModal.submitting')
+                : t('map.reportModal.submitButton')}
             </button>
           )}
         </div>

@@ -1,9 +1,28 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { act } from 'react'
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { ScoreDisplay } from '../components/common/ScoreDisplay.js'
 import { SAFETY_COLOURS } from '../services/safetyColours.js'
+
+vi.mock('react-i18next', () => {
+  const translations: Record<string, string> = {
+    'map.bands.green': 'Safe',
+    'map.bands.amber': 'Caution',
+    'map.bands.red': 'Avoid',
+    'map.safetyIndex': 'Safety Index',
+  }
+  return {
+    useTranslation: () => ({
+      t: (key: string) => translations[key] || key,
+      i18n: {
+        changeLanguage: () => Promise.resolve(),
+        language: 'en',
+      },
+    }),
+    Trans: ({ children }: any) => children,
+  }
+})
 
 describe('ScoreDisplay', () => {
   let container: HTMLDivElement

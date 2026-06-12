@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSessionStore } from '../../store/sessionStore.js'
 
 interface RouteSearchBarProps {
@@ -14,43 +15,54 @@ const LANDMARKS: Record<string, [number, number]> = {
   madhapur: [17.448, 78.39],
 }
 
-function parseInput(val: string): { lat: number; lng: number } | null {
-  const norm = val.trim().toLowerCase().replace(/\s+/g, '')
-
-  // Preset match
-  if (norm in LANDMARKS) {
-    const coords = LANDMARKS[norm]!
-    return { lat: coords[0], lng: coords[1] }
-  }
-
-  // Lat, Lng parse
-  const parts = val.split(',').map((p) => parseFloat(p.trim()))
-  if (parts.length === 2 && !isNaN(parts[0]!) && !isNaN(parts[1]!)) {
-    return { lat: parts[0]!, lng: parts[1]! }
-  }
-
-  return null
-}
-
 export function RouteSearchBar({ onSearch, isPending }: RouteSearchBarProps) {
+  const { t } = useTranslation()
   const { setOrigin, setDestination } = useSessionStore()
   const [originInput, setOriginInput] = useState('')
   const [destInput, setDestInput] = useState('')
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
+  const findCoords = (val: string): { lat: number; lng: number } | null => {
+    const norm = val.trim().toLowerCase().replace(/\s+/g, '')
+    if (!norm) return null
+
+    // Check English presets
+    if (norm in LANDMARKS) {
+      const coords = LANDMARKS[norm]!
+      return { lat: coords[0], lng: coords[1] }
+    }
+
+    // Check localized presets
+    for (const key of Object.keys(LANDMARKS)) {
+      const localized = t(`map.areas.${key}`).trim().toLowerCase().replace(/\s+/g, '')
+      if (norm === localized) {
+        const coords = LANDMARKS[key]!
+        return { lat: coords[0], lng: coords[1] }
+      }
+    }
+
+    // Lat, Lng parse
+    const parts = val.split(',').map((p) => parseFloat(p.trim()))
+    if (parts.length === 2 && !isNaN(parts[0]!) && !isNaN(parts[1]!)) {
+      return { lat: parts[0]!, lng: parts[1]! }
+    }
+
+    return null
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setErrorMsg(null)
 
-    const originCoords = parseInput(originInput)
-    const destCoords = parseInput(destInput)
+    const originCoords = findCoords(originInput)
+    const destCoords = findCoords(destInput)
 
     if (!originCoords) {
-      setErrorMsg('Could not parse Origin. Use "Kondapur" or "lat, lng" coordinates.')
+      setErrorMsg(t('map.finder.errOrigin'))
       return
     }
     if (!destCoords) {
-      setErrorMsg('Could not parse Destination. Use "Gachibowli" or "lat, lng" coordinates.')
+      setErrorMsg(t('map.finder.errDest'))
       return
     }
 
@@ -61,15 +73,13 @@ export function RouteSearchBar({ onSearch, isPending }: RouteSearchBarProps) {
 
   const handleChipClick = (landmark: string) => {
     setErrorMsg(null)
-    const start = 'Kondapur'
-    setOriginInput(start)
+    const startName = t('map.areas.kondapur')
+    const destName = t(`map.areas.${landmark}`)
 
-    // Capitalize label for display
-    const destLabel = landmark.charAt(0).toUpperCase() + landmark.slice(1)
-    const displayDest = destLabel === 'Banjarahills' ? 'Banjara Hills' : destLabel
-    setDestInput(displayDest)
+    setOriginInput(startName)
+    setDestInput(destName)
 
-    const originTuple = LANDMARKS[start.toLowerCase()]!
+    const originTuple = LANDMARKS['kondapur']!
     const destTuple = LANDMARKS[landmark]!
 
     const originCoords = { lat: originTuple[0], lng: originTuple[1] }
@@ -85,31 +95,33 @@ export function RouteSearchBar({ onSearch, isPending }: RouteSearchBarProps) {
       <div className="flex items-center gap-2 border-b border-[#1f2937] pb-3">
         <span className="text-lg">🔍</span>
         <h3 className="text-xs font-black uppercase tracking-wider text-gray-200">
-          Safety Route Finder
+          {t('map.finder.title')}
         </h3>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-1.5">
           <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-            From
+            {t('map.finder.from')}
           </label>
           <input
             type="text"
             value={originInput}
             onChange={(e) => setOriginInput(e.target.value)}
-            placeholder="Origin (e.g. Kondapur or 17.462, 78.356)"
+            placeholder={t('map.finder.fromPlaceholder')}
             className="w-full rounded-xl bg-[#1f2937] border border-[#2e3a52] px-3.5 py-2.5 text-xs text-white placeholder-gray-500 focus:border-[#f59e0b] focus:outline-none focus:ring-1 focus:ring-[#f59e0b] transition-colors"
           />
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">To</label>
+          <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+            {t('map.finder.to')}
+          </label>
           <input
             type="text"
             value={destInput}
             onChange={(e) => setDestInput(e.target.value)}
-            placeholder="Destination (e.g. Gachibowli or 17.440, 78.348)"
+            placeholder={t('map.finder.toPlaceholder')}
             className="w-full rounded-xl bg-[#1f2937] border border-[#2e3a52] px-3.5 py-2.5 text-xs text-white placeholder-gray-500 focus:border-[#f59e0b] focus:outline-none focus:ring-1 focus:ring-[#f59e0b] transition-colors"
           />
         </div>
@@ -129,21 +141,21 @@ export function RouteSearchBar({ onSearch, isPending }: RouteSearchBarProps) {
               : 'bg-[#f59e0b] hover:bg-[#d97706] text-slate-900 active:scale-95 cursor-pointer'
           }`}
         >
-          {isPending ? 'Calculating...' : 'Find Safest Route →'}
+          {isPending ? t('map.finder.calculating') : `${t('map.finder.findButton')} →`}
         </button>
       </form>
 
       {/* Quick Areas */}
       <div className="mt-4 pt-4 border-t border-[#1f2937] space-y-2.5">
         <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block">
-          ── Quick Areas ──
+          ── {t('map.finder.quickAreas')} ──
         </span>
         <div className="flex flex-wrap gap-2">
           {[
-            { label: 'Banjara Hills', key: 'banjarahills' },
-            { label: 'Gachibowli', key: 'gachibowli' },
-            { label: 'Kondapur', key: 'kondapur' },
-            { label: 'Madhapur', key: 'madhapur' },
+            { label: t('map.areas.banjarahills'), key: 'banjarahills' },
+            { label: t('map.areas.gachibowli'), key: 'gachibowli' },
+            { label: t('map.areas.kondapur'), key: 'kondapur' },
+            { label: t('map.areas.madhapur'), key: 'madhapur' },
           ].map((chip) => (
             <button
               key={chip.key}

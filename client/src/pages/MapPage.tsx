@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { MapContainer, TileLayer, Polyline, CircleMarker, Tooltip, useMap } from 'react-leaflet'
 import { useMutation, useQuery } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { useMapStore, type ActiveLayer } from '../store/mapStore.js'
 import { useSessionStore } from '../store/sessionStore.js'
 import { api, type RouteResult } from '../services/api.js'
@@ -56,6 +57,7 @@ function MapController({
 }
 
 export default function MapPage() {
+  const { t } = useTranslation()
   const selectedSegmentId = useMapStore((state) => state.selectedSegmentId)
   const activeLayer = useMapStore((state) => state.activeLayer)
   const setActiveLayer = useMapStore((state) => state.setActiveLayer)
@@ -102,11 +104,11 @@ export default function MapPage() {
     onSuccess: (data) => {
       setRoutes(data)
       setSelectedRoute('safest')
-      setToastMessage('Routes computed successfully!')
+      setToastMessage(t('map.routesSuccess'))
     },
     onError: (err: any) => {
-      const msg = err.response?.data?.message || err.message || 'Routing failed.'
-      setToastMessage(`Error: ${msg}`)
+      const msg = err.response?.data?.message || err.message || t('map.routingFailed')
+      setToastMessage(msg === t('map.routingFailed') ? msg : `${t('map.routingFailed')} ${msg}`)
     },
   })
 
@@ -172,7 +174,7 @@ export default function MapPage() {
                         : 'text-gray-400 hover:text-white hover:bg-gray-800'
                     }`}
                 >
-                  {layer}
+                  {t(`map.layers.${key === 'composite' ? 'all' : key}`)}
                 </button>
               )
             })}
@@ -212,7 +214,7 @@ export default function MapPage() {
               >
                 <Tooltip permanent direction="top">
                   <span className="text-[10px] font-bold text-slate-800 uppercase tracking-wider">
-                    Origin
+                    {t('map.origin')}
                   </span>
                 </Tooltip>
               </CircleMarker>
@@ -231,7 +233,7 @@ export default function MapPage() {
               >
                 <Tooltip permanent direction="top">
                   <span className="text-[10px] font-bold text-slate-800 uppercase tracking-wider">
-                    Destination
+                    {t('map.destination')}
                   </span>
                 </Tooltip>
               </CircleMarker>
@@ -284,12 +286,12 @@ export default function MapPage() {
               if (selectedSegmentId) {
                 setIsReportModalOpen(true)
               } else {
-                alert('Please click on a road segment on the map first to report a hazard.')
+                alert(t('map.reportPrompt'))
               }
             }}
             className="absolute bottom-24 right-4 z-[1000] flex items-center gap-2 bg-[#f59e0b] hover:bg-[#d97706] text-[#0a0f1a] font-extrabold px-5 py-3 rounded-full shadow-2xl transition-all hover:scale-105 active:scale-95 cursor-pointer text-xs uppercase tracking-wider"
           >
-            <span className="text-base leading-none">⚠️</span> Report Hazard
+            <span className="text-base leading-none">⚠️</span> {t('map.reportButton')}
           </button>
 
           {/* Floating Chat Bubble & Assistant Panel */}

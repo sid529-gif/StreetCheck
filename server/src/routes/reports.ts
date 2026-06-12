@@ -8,6 +8,8 @@ import { recalculateSegmentScore } from '../services/scoringEngine.js'
 import { validate, validateQuery } from '../middleware/validate.js'
 import { env } from '../env.js'
 import { HazardTypeEnum } from '@streetcheck/shared'
+import { getAiConfig } from './ai.js'
+import { classifyReport, detectHazard } from '../services/aiClient.js'
 
 const router = Router()
 
@@ -113,33 +115,51 @@ router.post('/', validate(SubmitReportSchema), async (req: Request, res: Respons
   let cvHazardType: string | null = null
   let cvConfidence: number | null = null
 
-  if (body.description && env.AI_SERVICE_URL) {
+  const aiConfig = getAiConfig(req)
+
+  if (body.description) {
     try {
-      const resp = await axios.post<{ hazardType: string; confidence: number }>(
-        `${env.AI_SERVICE_URL}/classify`,
-        { text: body.description },
-        { timeout: 5000, headers: { 'X-Service-Secret': env.AI_SERVICE_SECRET } }
-      )
-      nlpHazardType = resp.data.hazardType
-      nlpConfidence = resp.data.confidence
+      if (aiConfig.provider === 'server') {
+        if (env.AI_SERVICE_URL) {
+          const resp = await axios.post<{ hazardType: string; confidence: number }>(
+            `${env.AI_SERVICE_URL}/classify`,
+            { text: body.description },
+            { timeout: 5000, headers: { 'X-Service-Secret': env.AI_SERVICE_SECRET } }
+          )
+          nlpHazardType = resp.data.hazardType
+          nlpConfidence = resp.data.confidence
+        }
+      } else {
+        const result = await classifyReport(body.description, aiConfig)
+        nlpHazardType = result.hazardType
+        nlpConfidence = result.confidence
+      }
     } catch {
       // AI service is optional — continue without it
     }
   }
 
-  if (body.photoUrl && env.AI_SERVICE_URL) {
+  if (body.photoUrl) {
     try {
-      const resp = await axios.post<{
-        hazardType: string | null
-        confidence: number
-        description?: string
-      }>(
-        `${env.AI_SERVICE_URL}/detect`,
-        { photo_url: body.photoUrl },
-        { timeout: 10000, headers: { 'X-Service-Secret': env.AI_SERVICE_SECRET } }
-      )
-      cvHazardType = resp.data.hazardType
-      cvConfidence = resp.data.confidence
+      if (aiConfig.provider === 'server') {
+        if (env.AI_SERVICE_URL) {
+          const resp = await axios.post<{
+            hazardType: string | null
+            confidence: number
+            description?: string
+          }>(
+            `${env.AI_SERVICE_URL}/detect`,
+            { photo_url: body.photoUrl },
+            { timeout: 10000, headers: { 'X-Service-Secret': env.AI_SERVICE_SECRET } }
+          )
+          cvHazardType = resp.data.hazardType
+          cvConfidence = resp.data.confidence
+        }
+      } else {
+        const result = await detectHazard(body.photoUrl, aiConfig)
+        cvHazardType = result.hazardType
+        cvConfidence = result.confidence
+      }
     } catch {
       // AI service is optional — continue without it
     }

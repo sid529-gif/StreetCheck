@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useMapStore } from '../../store/mapStore.js'
 import { api } from '../../services/api.js'
 
@@ -14,25 +15,26 @@ interface AssistantPanelProps {
   onClose: () => void
 }
 
-const STARTER_PROMPTS = [
-  'Is it safe to walk here at night?',
-  'Which route has better lighting?',
-  'Are there any flood-prone roads nearby?',
-]
-
 export function AssistantPanel({ isOpen, onClose }: AssistantPanelProps) {
+  const { t } = useTranslation()
   const viewport = useMapStore((state) => state.viewport)
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 'welcome',
       role: 'assistant',
-      text: 'Hi! I am your StreetCheck road safety assistant. Ask me about lighting, flood risks, surface conditions, or route safety in Hyderabad.',
+      text: 'welcome-message',
       timestamp: new Date(),
     },
   ])
   const [inputValue, setInputValue] = useState('')
   const [isPending, setIsPending] = useState(false)
   const threadEndRef = useRef<HTMLDivElement>(null)
+
+  const starterPrompts = [
+    t('map.assistant.starters.safeNight'),
+    t('map.assistant.starters.betterLighting'),
+    t('map.assistant.starters.floodProne'),
+  ]
 
   // Auto scroll to bottom when messages change
   useEffect(() => {
@@ -72,9 +74,7 @@ export function AssistantPanel({ isOpen, onClose }: AssistantPanelProps) {
       }
       setMessages((prev) => [...prev, assistantMessage])
     } catch (err: any) {
-      const errorMsg =
-        err.response?.data?.message ||
-        'I am currently offline or unable to reach the Claude AI service. Please check your connection and try again.'
+      const errorMsg = err.response?.data?.message || t('map.assistant.offline')
       const errorMessage: Message = {
         id: crypto.randomUUID(),
         role: 'assistant',
@@ -97,13 +97,13 @@ export function AssistantPanel({ isOpen, onClose }: AssistantPanelProps) {
             <span className="relative inline-flex rounded-full h-2 w-2 bg-[#f59e0b]"></span>
           </div>
           <h3 className="text-xs font-black text-white uppercase tracking-wider ml-1">
-            StreetCheck Assistant
+            {t('map.assistant.title')}
           </h3>
         </div>
         <button
           onClick={onClose}
           className="text-gray-400 hover:text-white transition-colors cursor-pointer"
-          aria-label="Close chat"
+          aria-label={t('map.assistant.closeChat')}
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -120,6 +120,7 @@ export function AssistantPanel({ isOpen, onClose }: AssistantPanelProps) {
       <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#0a0f1a]/40">
         {messages.map((msg) => {
           const isAssistant = msg.role === 'assistant'
+          const textToRender = msg.id === 'welcome' ? t('map.assistant.welcome') : msg.text
           return (
             <div key={msg.id} className={`flex ${isAssistant ? 'justify-start' : 'justify-end'}`}>
               {isAssistant ? (
@@ -128,7 +129,7 @@ export function AssistantPanel({ isOpen, onClose }: AssistantPanelProps) {
                     SC
                   </div>
                   <div className="bg-[#1f2937] text-slate-100 rounded-2xl rounded-tl-none border border-[#2e3a52]/40 px-4 py-2.5 text-xs leading-relaxed shadow-md">
-                    {msg.text}
+                    {textToRender}
                     <div className="text-[8px] mt-1 text-right text-gray-500 font-semibold uppercase tracking-wider">
                       {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </div>
@@ -154,7 +155,7 @@ export function AssistantPanel({ isOpen, onClose }: AssistantPanelProps) {
               </div>
               <div className="bg-[#1f2937] text-gray-400 rounded-2xl rounded-tl-none border border-[#2e3a52]/40 px-4 py-2.5 text-xs flex items-center gap-1.5 shadow-md">
                 <span className="font-bold uppercase tracking-wider text-[9px]">
-                  Claude is typing
+                  {t('map.assistant.typing')}
                 </span>
                 <span className="flex gap-0.5">
                   <span className="h-1.5 w-1.5 rounded-full bg-[#f59e0b] animate-bounce [animation-delay:-0.3s]" />
@@ -172,7 +173,7 @@ export function AssistantPanel({ isOpen, onClose }: AssistantPanelProps) {
       <div className="p-4 bg-[#111827] border-t border-[#1f2937] space-y-3">
         {/* Quick Pills */}
         <div className="flex flex-wrap gap-2">
-          {STARTER_PROMPTS.map((prompt) => (
+          {starterPrompts.map((prompt) => (
             <button
               key={prompt}
               onClick={() => handleSendMessage(prompt)}
@@ -197,7 +198,7 @@ export function AssistantPanel({ isOpen, onClose }: AssistantPanelProps) {
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             disabled={isPending}
-            placeholder="Ask safety helper..."
+            placeholder={t('map.assistant.placeholder')}
             className="flex-1 bg-[#0a0f1a] text-xs text-white placeholder-gray-500 rounded-xl border border-[#2e3a52] px-3.5 py-2.5 focus:outline-none focus:border-[#f59e0b] disabled:opacity-55"
           />
           <button
@@ -208,7 +209,7 @@ export function AssistantPanel({ isOpen, onClose }: AssistantPanelProps) {
                 ? 'bg-gray-800 text-gray-500 cursor-not-allowed border border-[#1f2937]'
                 : 'bg-[#f59e0b] hover:bg-[#d97706] text-[#0a0f1a]'
             }`}
-            aria-label="Send message"
+            aria-label={t('map.assistant.send')}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path

@@ -8,6 +8,7 @@ import {
   ExplanationRequestSchema,
   AssistantRequestSchema,
   DetectPhotoSchema,
+  ClassifyTextSchema,
   getSafetyBand,
 } from '@streetcheck/shared'
 import {
@@ -15,8 +16,9 @@ import {
   getRouteExplanation,
   getAssistantResponse,
   detectHazard,
+  classifyReport,
 } from '../services/aiClient.js'
-import type { SegmentDetail, SegmentContext } from '../services/aiClient.js'
+import type { SegmentDetail, SegmentContext, AiConfig } from '../services/aiClient.js'
 import type { RouteOption } from '../services/routingService.js'
 
 const router = Router()
@@ -134,6 +136,26 @@ async function aggregateSegmentsToRouteOption(
 
 // ── Endpoints ─────────────────────────────────────────────────────────────────
 
+export function getAiConfig(req: Request): AiConfig {
+  const getHeader = (name: string): string | undefined => {
+    if (typeof req.header === 'function') {
+      return req.header(name)
+    }
+    return (req.headers?.[name] || req.headers?.[name.toLowerCase()]) as string | undefined
+  }
+
+  const provider = (getHeader('x-ai-provider') as any) || 'server'
+  const apiKey = getHeader('x-ai-api-key')
+  const ollamaHost = getHeader('x-ollama-host') || 'http://localhost:11434'
+  const ollamaModel = getHeader('x-ollama-model') || 'qwen3:1.7b'
+
+  const config: AiConfig = { provider }
+  if (apiKey !== undefined) config.apiKey = apiKey
+  if (ollamaHost !== undefined) config.ollamaHost = ollamaHost
+  if (ollamaModel !== undefined) config.ollamaModel = ollamaModel
+  return config
+}
+
 /**
  * POST /api/ai/summary
  * Expects: { segmentId: string }
@@ -145,6 +167,7 @@ router.post(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { segmentId } = req.body as { segmentId: string }
+      const aiConfig = getAiConfig(req)
 
       const segment = await prisma.roadSegment.findUnique({
         where: { id: segmentId },
@@ -201,7 +224,7 @@ router.post(
         createdAt: segment.createdAt.toISOString(),
       }
 
-      const summary = await getSegmentSummary(detail)
+      const summary = await getSegmentSummary(detail, aiConfig)
       res.json({ summary, segmentId })
     } catch (err) {
       next(err)
@@ -223,13 +246,14 @@ router.post(
         fastestSegments: string[]
         safestSegments: string[]
       }
+      const aiConfig = getAiConfig(req)
 
       const [fastestRouteOption, safestRouteOption] = await Promise.all([
         aggregateSegmentsToRouteOption(fastestSegments, 'Fastest'),
         aggregateSegmentsToRouteOption(safestSegments, 'Safest'),
       ])
 
-      const explanation = await getRouteExplanation(fastestRouteOption, safestRouteOption)
+      const explanation = await getRouteExplanation(fastestRouteOption, safestRouteOption, aiConfig)
       res.json({ explanation })
     } catch (err) {
       next(err)
@@ -251,6 +275,7 @@ router.post(
         question: string
         bbox?: [number, number, number, number]
       }
+      const aiConfig = getAiConfig(req)
 
       let context: SegmentContext[] = []
 
@@ -281,7 +306,7 @@ router.post(
         }))
       }
 
-      const answer = await getAssistantResponse(question, context)
+      const answer = await getAssistantResponse(question, context, aiConfig)
       res.json({ answer })
     } catch (err) {
       next(err)
@@ -300,11 +325,36 @@ router.post(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { photoUrl } = req.body as { photoUrl: string }
-      const result = await detectHazard(photoUrl)
+      const aiConfig = getAiConfig(req)
+      const result = await detectHazard(photoUrl, aiConfig)
       res.json({
-        suggestedType: result.hazardType,
+        suggestedType: result.confidence >= 0.65 ? result.hazardType : null,
         confidence: result.confidence,
         fallbackUsed: result.fallbackUsed,
+        model: result.model,
+      })
+    } catch (err) {
+      next(err)
+    }
+  }
+)
+
+/**
+ * POST /api/ai/classify-text
+ * Expects: { text: string }
+ * Returns: { suggestedType: HazardType | null, confidence: number }
+ */
+router.post(
+  '/classify-text',
+  validate(ClassifyTextSchema),
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { text } = req.body as { text: string }
+      const aiConfig = getAiConfig(req)
+      const result = await classifyReport(text, aiConfig)
+      res.json({
+        suggestedType: result.confidence >= 0.65 ? result.hazardType : null,
+        confidence: result.confidence,
         model: result.model,
       })
     } catch (err) {

@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import axios from 'axios'
 
 interface PhotoUploaderProps {
@@ -12,6 +13,7 @@ export function PhotoUploader({
   onUploadStart,
   onUploadError,
 }: PhotoUploaderProps) {
+  const { t } = useTranslation()
   const [progress, setProgress] = useState<number>(0)
   const [uploading, setUploading] = useState<boolean>(false)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
@@ -28,7 +30,9 @@ export function PhotoUploader({
 
     // Limit to image formats
     if (!file.type.startsWith('image/')) {
-      const errMsg = 'Only image files are allowed.'
+      const errMsg = t('map.photoUploader.errFormat', {
+        defaultValue: 'Only image files are allowed.',
+      })
       setErrorMsg(errMsg)
       onUploadError?.(errMsg)
       return
@@ -36,7 +40,9 @@ export function PhotoUploader({
 
     // Limit to 5MB
     if (file.size > 5 * 1024 * 1024) {
-      const errMsg = 'File size exceeds 5MB limit.'
+      const errMsg = t('map.photoUploader.errSize', {
+        defaultValue: 'File size exceeds 5MB limit.',
+      })
       setErrorMsg(errMsg)
       onUploadError?.(errMsg)
       return
@@ -64,7 +70,8 @@ export function PhotoUploader({
           setUploading(false)
           // Use standard unsplash street hazard image as placeholder mock
           const mockUrl =
-            'https://images.unsplash.com/photo-1515162305285-0293e4767cc2?auto=format&fit=crop&q=80&w=400'
+            'https://images.unsplash.com/photo-1515162305285-0293e4767cc2?auto=format&fit=crop&q=80&w=400#' +
+            encodeURIComponent(file.name)
           onUploadSuccess(mockUrl)
         }
       }, 150)
@@ -93,7 +100,9 @@ export function PhotoUploader({
     } catch (err: any) {
       setUploading(false)
       setPreviewUrl(null)
-      const errDetail = err.response?.data?.error?.message || 'Cloudinary upload failed.'
+      const errDetail =
+        err.response?.data?.error?.message ||
+        t('map.photoUploader.errCloudinary', { defaultValue: 'Cloudinary upload failed.' })
       console.error('Cloudinary Upload Error:', err)
       setErrorMsg(errDetail)
       onUploadError?.(errDetail)
@@ -107,7 +116,7 @@ export function PhotoUploader({
   return (
     <div className="space-y-2">
       <label className="text-xs font-bold uppercase tracking-wider text-[#94a3b8]">
-        Upload Evidence Photo
+        {t('map.photoUploader.title', { defaultValue: 'Upload Evidence Photo' })}
       </label>
       <input
         type="file"
@@ -139,9 +148,13 @@ export function PhotoUploader({
             />
           </svg>
           <span className="text-xs font-medium text-white">
-            {uploading ? 'Uploading...' : 'Tap to Upload Photo'}
+            {uploading
+              ? t('map.photoUploader.uploading')
+              : t('map.photoUploader.tapToUpload', { defaultValue: 'Tap to Upload Photo' })}
           </span>
-          <span className="text-[10px] text-[#94a3b8] mt-0.5">JPEG, PNG, WebP up to 5MB</span>
+          <span className="text-[10px] text-[#94a3b8] mt-0.5">
+            {t('map.photoUploader.limitNotes', { defaultValue: 'JPEG, PNG, WebP up to 5MB' })}
+          </span>
         </button>
 
         {previewUrl && (
@@ -160,7 +173,11 @@ export function PhotoUploader({
       {uploading && (
         <div className="space-y-1">
           <div className="flex justify-between text-[10px] text-[#cbd5e1]">
-            <span>Uploading to cloud storage...</span>
+            <span>
+              {t('map.photoUploader.cloudProgress', {
+                defaultValue: 'Uploading to cloud storage...',
+              })}
+            </span>
             <span className="font-bold">{progress}%</span>
           </div>
           <div className="w-full bg-[#1a1f2e] h-1.5 rounded-full overflow-hidden">

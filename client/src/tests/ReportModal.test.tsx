@@ -2,10 +2,73 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import axios from 'axios'
 import { useSessionStore } from '../store/sessionStore.js'
 
+vi.mock('react-i18next', () => {
+  const translations: Record<string, string> = {
+    'map.reportModal.title': 'Report Hazard',
+    'map.reportModal.near': 'Near {{name}}',
+    'map.reportModal.cancel': 'Cancel reporting',
+    'map.reportModal.see': 'What did you see?',
+    'map.reportModal.suggested': 'Suggested',
+    'map.reportModal.aiRunning': 'Running AI Hazard Detection...',
+    'map.reportModal.aiTitle': 'AI Hazard Recommendation',
+    'map.reportModal.aiDesc':
+      'AI detected: <1>{{type}}</1> with <3>{{confidence}}%</3> confidence. Is this correct?',
+    'map.reportModal.aiSubmit': 'Yes, submit',
+    'map.reportModal.aiChoose': 'No, let me choose',
+    'map.reportModal.noteLabel': 'Add a note (optional)',
+    'map.reportModal.notePlaceholder':
+      "Provide extra details e.g., 'Right lane flooded' or 'broken cover'...",
+    'map.reportModal.photoLabel': 'Add photo',
+    'map.reportModal.submitButton': 'Submit Report',
+    'map.reportModal.submitting': 'Submitting...',
+    'map.reportModal.successMsg': 'Success! Safety score recalculated: {{score}}%',
+    'map.hazards.pothole': 'Pothole',
+    'map.hazards.broken_streetlight': 'Light',
+    'map.hazards.waterlogging': 'Flood',
+    'map.hazards.construction_debris': 'Build',
+    'map.hazards.open_manhole': 'Debris',
+    'map.hazards.stray_animals': 'Animal',
+    'map.hazards.broken_footpath': 'Footpath',
+    'map.unnamedStreet': 'Unnamed Street',
+  }
+
+  const tMock = (key: string, options?: any) => {
+    let value = translations[key] || key
+    if (options) {
+      if (value === key && options.defaultValue) {
+        value = options.defaultValue
+      }
+      Object.keys(options).forEach((optKey) => {
+        value = value.replace(new RegExp(`{{\\s*${optKey}\\s*}}`, 'g'), String(options[optKey]))
+      })
+    }
+    return value
+  }
+
+  return {
+    useTranslation: () => ({
+      t: tMock,
+      i18n: {
+        changeLanguage: () => Promise.resolve(),
+        language: 'en',
+      },
+    }),
+    Trans: ({ children }: any) => children,
+  }
+})
+
 // Mock axios at the network level to intercept api calls
 vi.mock('axios', () => {
   const mockAxios = {
     create: vi.fn(() => mockAxios),
+    interceptors: {
+      request: {
+        use: vi.fn(),
+      },
+      response: {
+        use: vi.fn(),
+      },
+    },
     post: vi.fn((url) => {
       if (url.includes('/api/ai/detect-photo')) {
         return Promise.resolve({
@@ -231,7 +294,7 @@ describe('ReportModal', () => {
 
     const text = container.textContent || ''
     expect(text).toContain('AI Hazard Recommendation')
-    expect(text).toContain('AI detected: pothole')
+    expect(text.toLowerCase()).toContain('ai detected: pothole')
     expect(text).toContain('85% confidence')
   })
 

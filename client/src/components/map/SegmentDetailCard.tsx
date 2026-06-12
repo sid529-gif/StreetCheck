@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { useMapStore } from '../../store/mapStore.js'
 import { api } from '../../services/api.js'
 import { ScoreDisplay } from '../common/ScoreDisplay.js'
@@ -7,17 +8,8 @@ interface SegmentDetailCardProps {
   onOpenReport: () => void
 }
 
-const HAZARD_LABELS: Record<string, string> = {
-  pothole: 'Pothole 🕳️',
-  broken_streetlight: 'Broken Light 💡',
-  waterlogging: 'Waterlogging 🌊',
-  construction_debris: 'Debris 🚧',
-  stray_animals: 'Stray Animals 🐕',
-  broken_footpath: 'Broken Footpath 🚶',
-  open_manhole: 'Open Manhole ⚠️',
-}
-
 export function SegmentDetailCard({ onOpenReport }: SegmentDetailCardProps) {
+  const { t } = useTranslation()
   const selectedSegmentId = useMapStore((state) => state.selectedSegmentId)
   const setSelectedSegment = useMapStore((state) => state.setSelectedSegment)
 
@@ -45,6 +37,10 @@ export function SegmentDetailCard({ onOpenReport }: SegmentDetailCardProps) {
 
   if (!selectedSegmentId) return null
 
+  const getHazardLabel = (type: string) => {
+    return t(`map.hazardsFull.${type}`, { defaultValue: type })
+  }
+
   return (
     <div className="w-full h-[60vh] md:h-full bg-[#111827] text-white flex flex-col fixed bottom-0 left-0 right-0 z-[1000] rounded-t-3xl md:rounded-none border-t border-[#1f2937] md:border-none md:relative md:bottom-auto md:left-auto md:right-auto md:z-0 animate-in slide-in-from-bottom duration-300">
       {/* Drag handle for mobile */}
@@ -57,10 +53,10 @@ export function SegmentDetailCard({ onOpenReport }: SegmentDetailCardProps) {
           type="button"
           className="text-gray-400 hover:text-white transition-colors cursor-pointer text-xs font-semibold flex items-center gap-1"
         >
-          <span>&larr;</span> Back
+          <span>&larr;</span> {t('map.back')}
         </button>
         <h4 className="text-xs font-black uppercase tracking-wider text-gray-200 ml-2">
-          Road Detail
+          {t('map.roadDetail')}
         </h4>
       </div>
 
@@ -75,7 +71,7 @@ export function SegmentDetailCard({ onOpenReport }: SegmentDetailCardProps) {
           </div>
         ) : error || !segment ? (
           <div className="text-center py-8 text-[#ef4444] text-xs font-bold">
-            Failed to load street details.
+            {t('map.segmentLoadError', { defaultValue: 'Failed to load street details.' })}
           </div>
         ) : (
           <>
@@ -83,11 +79,11 @@ export function SegmentDetailCard({ onOpenReport }: SegmentDetailCardProps) {
             <div className="space-y-4">
               <div>
                 <h2 className="text-base font-black text-white leading-tight uppercase tracking-wide">
-                  {segment.name || 'Unnamed Street'}
+                  {segment.name || t('map.unnamedStreet')}
                 </h2>
                 {segment.osmHighway && (
                   <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">
-                    Highway: {segment.osmHighway.replace(/_/g, ' ')}
+                    {t('map.highway')}: {segment.osmHighway.replace(/_/g, ' ')}
                   </span>
                 )}
               </div>
@@ -100,28 +96,28 @@ export function SegmentDetailCard({ onOpenReport }: SegmentDetailCardProps) {
             {/* Score Dimensions */}
             <div className="space-y-4 pt-2 border-t border-[#1f2937]">
               <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                Safety Breakdown
+                {t('map.safetyBreakdown')}
               </h3>
               <div className="space-y-3">
                 {[
                   {
-                    label: 'Lighting',
+                    label: t('map.dimensions.lighting'),
                     score: segment.lightingScore,
                   },
                   {
-                    label: 'Accidents',
+                    label: t('map.dimensions.accidents'),
                     score: 1 - segment.accidentRate,
                   },
                   {
-                    label: 'Flood Risk',
+                    label: t('map.dimensions.flood'),
                     score: 1 - segment.floodRisk,
                   },
                   {
-                    label: 'Surface',
+                    label: t('map.dimensions.surface'),
                     score: segment.surfaceQuality,
                   },
                   {
-                    label: 'Walkability',
+                    label: t('map.dimensions.walkability'),
                     score: segment.walkabilityScore,
                   },
                 ].map((dim, i) => (
@@ -155,7 +151,7 @@ export function SegmentDetailCard({ onOpenReport }: SegmentDetailCardProps) {
               <div className="bg-[#0b1329] border border-[#f59e0b]/20 rounded-2xl p-4 bg-gradient-to-r from-[#0b1329] to-[#111827] space-y-1.5 shadow-md">
                 <div className="flex items-center gap-1.5 text-[9px] font-black text-[#f59e0b] uppercase tracking-wider">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#f59e0b] animate-ping" />
-                  AI Summary
+                  {t('map.aiSummary')}
                 </div>
                 <p className="text-[11px] text-gray-300 leading-relaxed italic">
                   &quot;{aiSummary}&quot;
@@ -167,10 +163,10 @@ export function SegmentDetailCard({ onOpenReport }: SegmentDetailCardProps) {
             <div className="space-y-4 pt-2 border-t border-[#1f2937]">
               <div className="flex items-center justify-between">
                 <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                  Hazard Reports
+                  {t('map.hazardReports')}
                 </h3>
                 <span className="px-2 py-0.5 rounded bg-[#0b1329] border border-[#1f2937] text-[10px] font-mono font-bold text-[#f59e0b]">
-                  {segment.activeReports} active
+                  {segment.activeReports} {t('map.active')}
                 </span>
               </div>
 
@@ -183,7 +179,7 @@ export function SegmentDetailCard({ onOpenReport }: SegmentDetailCardProps) {
                     >
                       <div className="flex items-center justify-between">
                         <span className="font-extrabold text-white uppercase tracking-wider text-[10px]">
-                          {HAZARD_LABELS[rep.hazardType] || rep.hazardType}
+                          {getHazardLabel(rep.hazardType)}
                         </span>
                         <span className="text-[9px] font-bold text-gray-500">
                           {new Date(rep.createdAt).toLocaleDateString()}
@@ -208,7 +204,7 @@ export function SegmentDetailCard({ onOpenReport }: SegmentDetailCardProps) {
                 </div>
               ) : (
                 <div className="text-center py-6 text-[10px] text-gray-500 bg-[#0a0f1a] border border-dashed border-[#1f2937] rounded-xl font-bold uppercase tracking-wider">
-                  All Clear! No Active Hazards.
+                  {t('map.allClear')}
                 </div>
               )}
             </div>
@@ -224,7 +220,7 @@ export function SegmentDetailCard({ onOpenReport }: SegmentDetailCardProps) {
             type="button"
             className="w-full py-3 bg-[#f59e0b] hover:bg-[#d97706] text-[#0a0f1a] font-extrabold rounded-xl text-xs uppercase tracking-wider transition-colors text-center cursor-pointer shadow-lg active:scale-95"
           >
-            Report Hazard Here
+            {t('map.reportHere')}
           </button>
         </div>
       )}

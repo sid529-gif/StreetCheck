@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { useTranslation, Trans } from 'react-i18next'
 import type { RouteResult } from '../../services/api.js'
 import { api } from '../../services/api.js'
 
@@ -15,6 +16,8 @@ export function RouteComparisonPanel({
   onSelectRoute,
   onClear,
 }: RouteComparisonPanelProps) {
+  const { t } = useTranslation()
+
   const { data: explanation, isLoading: loadingExplanation } = useQuery({
     queryKey: [
       'routeExplanation',
@@ -49,10 +52,10 @@ export function RouteComparisonPanel({
           type="button"
           className="text-gray-400 hover:text-white transition-colors cursor-pointer text-xs font-semibold flex items-center gap-1"
         >
-          <span>&larr;</span> Back
+          <span>&larr;</span> {t('map.back')}
         </button>
         <h4 className="text-xs font-black uppercase tracking-wider text-gray-200 ml-2">
-          Compare Routes
+          {t('map.compareRoutes')}
         </h4>
       </div>
 
@@ -70,7 +73,7 @@ export function RouteComparisonPanel({
         >
           <div className="flex justify-between items-center w-full">
             <span className="text-[9px] font-black uppercase tracking-wider text-white">
-              ⚡ Fastest
+              ⚡ {t('map.fastest')}
             </span>
           </div>
           <div className="mt-2 text-lg font-black text-white leading-none">
@@ -82,7 +85,7 @@ export function RouteComparisonPanel({
           <div
             className={`mt-3.5 inline-flex items-center self-start text-[10px] px-2 py-0.5 rounded font-mono font-black border ${getScoreBg(fastest.overallSafetyScore)}`}
           >
-            Score: {Math.round(fastest.overallSafetyScore)}
+            {t('map.safetyIndex')}: {Math.round(fastest.overallSafetyScore)}
           </div>
         </button>
 
@@ -98,7 +101,7 @@ export function RouteComparisonPanel({
         >
           <div className="flex justify-between items-center w-full">
             <span className="text-[9px] font-black uppercase tracking-wider text-white">
-              🛡️ Safest
+              🛡️ {t('map.safest')}
             </span>
           </div>
           <div className="mt-2 text-lg font-black text-white leading-none">
@@ -110,7 +113,7 @@ export function RouteComparisonPanel({
           <div
             className={`mt-3.5 inline-flex items-center self-start text-[10px] px-2 py-0.5 rounded font-mono font-black border ${getScoreBg(safest.overallSafetyScore)}`}
           >
-            Score: {Math.round(safest.overallSafetyScore)}
+            {t('map.safetyIndex')}: {Math.round(safest.overallSafetyScore)}
           </div>
         </button>
       </div>
@@ -126,7 +129,7 @@ export function RouteComparisonPanel({
         <div className="bg-[#0b1329] border border-[#f59e0b]/20 rounded-xl p-4 bg-gradient-to-r from-[#0b1329] to-[#111827] space-y-1.5 shadow-md">
           <div className="flex items-center gap-1.5 text-[9px] font-black text-[#f59e0b] uppercase tracking-wider">
             <span className="w-1.5 h-1.5 rounded-full bg-[#f59e0b] animate-ping" />
-            AI Route Insight
+            {t('map.routeInsight')}
           </div>
           <p className="text-[11px] text-gray-300 leading-relaxed italic">
             &quot;{explanation}&quot;
@@ -145,7 +148,7 @@ export function RouteComparisonPanel({
               : 'bg-[#1e2433] border-[#1f2937] hover:border-gray-600 text-gray-300'
           }`}
         >
-          Select Fastest
+          {t('map.selectFastest')}
         </button>
         <button
           onClick={() => onSelectRoute('safest')}
@@ -156,30 +159,34 @@ export function RouteComparisonPanel({
               : 'bg-[#1e2433] border-[#1f2937] hover:border-gray-600 text-gray-300'
           }`}
         >
-          Select Safest
+          {t('map.selectSafest')}
         </button>
       </div>
 
       {/* Safety Summary detail text */}
       <div className="text-[10px] text-gray-400 bg-[#0b1329] p-3.5 rounded-xl border border-[#1f2937] leading-relaxed mt-2">
         {selectedRoute === 'fastest' ? (
-          <p>
-            The <strong className="text-white">Fastest</strong> route takes the shortest physical
-            distance. It contains{' '}
-            <span className="text-[#ef4444] font-semibold">
-              {fastest.hazardSummary.redSegments} unsafe segments
-            </span>
-            .
-          </p>
+          <Trans i18nKey="map.routeSummary.fastest" count={fastest.hazardSummary.redSegments}>
+            <p>
+              The <strong className="text-white">Fastest</strong> route takes the shortest physical
+              distance. It contains{' '}
+              <span className="text-[#ef4444] font-semibold">
+                {fastest.hazardSummary.redSegments} unsafe segments
+              </span>
+              .
+            </p>
+          </Trans>
         ) : (
-          <p>
-            The <strong className="text-white">Safest</strong> route prioritizes well-lit, low-risk
-            streets, bypassing major hazard zones. It contains{' '}
-            <span className="text-[#22c55e] font-semibold">
-              {safest.hazardSummary.greenSegments} safe segments
-            </span>
-            .
-          </p>
+          <Trans i18nKey="map.routeSummary.safest" count={safest.hazardSummary.greenSegments}>
+            <p>
+              The <strong className="text-white">Safest</strong> route prioritizes well-lit,
+              low-risk streets, bypassing major hazard zones. It contains{' '}
+              <span className="text-[#22c55e] font-semibold">
+                {safest.hazardSummary.greenSegments} safe segments
+              </span>
+              .
+            </p>
+          </Trans>
         )}
       </div>
     </div>

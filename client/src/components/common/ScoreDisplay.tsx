@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { SAFETY_COLOURS } from '../../services/safetyColours.js'
 
 interface ScoreDisplayProps {
@@ -7,6 +8,7 @@ interface ScoreDisplayProps {
 }
 
 export function ScoreDisplay({ score, band, size = 'md' }: ScoreDisplayProps) {
+  const { t } = useTranslation()
   const scoreVal = Math.round(score * 100)
   const colors = SAFETY_COLOURS[band]
 
@@ -72,10 +74,10 @@ export function ScoreDisplay({ score, band, size = 'md' }: ScoreDisplayProps) {
 
       <div className="flex flex-col">
         <span className={`font-black uppercase tracking-wider ${colors.text} ${currentSize.label}`}>
-          {colors.label}
+          {t(`map.bands.${band}`)}
         </span>
         <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">
-          Safety Index
+          {t('map.safetyIndex')}
         </span>
       </div>
     </div>

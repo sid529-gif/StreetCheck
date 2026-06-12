@@ -1,36 +1,39 @@
+import { useTranslation, Trans } from 'react-i18next'
 import Navbar from '../components/navigation/Navbar.js'
 
 export default function AboutPage() {
+  const { t } = useTranslation()
+
   const formulaWeights = [
     {
-      name: 'Lighting Score',
+      name: t('about.model.lighting.name'),
       weight: 30,
       color: 'bg-blue-500',
-      desc: 'Street-by-street streetlight coverage and tag validations',
+      desc: t('about.model.lighting.desc'),
     },
     {
-      name: 'Accident Safety (1 - rate)',
+      name: t('about.model.accident.name'),
       weight: 25,
       color: 'bg-green-500',
-      desc: 'Normalized historical accident black spot density mapping',
+      desc: t('about.model.accident.desc'),
     },
     {
-      name: 'Flood Safety (1 - risk)',
+      name: t('about.model.flood.name'),
       weight: 20,
       color: 'bg-teal-500',
-      desc: 'Monsoon waterlogging zones, drains, and low points',
+      desc: t('about.model.flood.desc'),
     },
     {
-      name: 'Surface Quality',
+      name: t('about.model.surface.name'),
       weight: 15,
       color: 'bg-amber-500',
-      desc: 'Pothole frequencies, road surface materials, and cracks',
+      desc: t('about.model.surface.desc'),
     },
     {
-      name: 'Walkability Score',
+      name: t('about.model.walkability.name'),
       weight: 10,
       color: 'bg-indigo-500',
-      desc: 'Footpath presence, walk widths, and sidewalk coverage',
+      desc: t('about.model.walkability.desc'),
     },
   ]
 
@@ -42,27 +45,21 @@ export default function AboutPage() {
         {/* Header */}
         <div className="space-y-4">
           <div className="text-xs font-bold text-[#f59e0b] uppercase tracking-widest">
-            Swecha Hackathon 2026
+            {t('about.preTitle')}
           </div>
           <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tight">
-            About StreetCheck
+            {t('about.title')}
           </h1>
-          <p className="text-base text-gray-400 leading-relaxed">
-            StreetCheck is Hyderabad&apos;s civic road safety intelligence platform. Similar to
-            CrystalRoof in the UK, it evaluates every road segment in the city on five key safety
-            dimensions to empower citizens to make safer, better-informed navigation decisions.
-          </p>
+          <p className="text-base text-gray-400 leading-relaxed">{t('about.desc')}</p>
         </div>
 
         {/* Scoring Model Visualized */}
         <section className="bg-[#111827] border border-[#1f2937] rounded-3xl p-8 space-y-8">
           <div>
             <h2 className="text-lg font-black uppercase text-[#f59e0b] tracking-wider">
-              Safety Scoring Model
+              {t('about.model.title')}
             </h2>
-            <p className="text-xs text-gray-400 mt-1">
-              Safety scores are calculated dynamically per road segment based on locked weights:
-            </p>
+            <p className="text-xs text-gray-400 mt-1">{t('about.model.desc')}</p>
           </div>
 
           <div className="space-y-5">
@@ -70,7 +67,9 @@ export default function AboutPage() {
               <div key={i} className="space-y-2">
                 <div className="flex justify-between items-baseline text-xs">
                   <div className="font-extrabold text-white uppercase tracking-wide">{w.name}</div>
-                  <div className="font-mono font-bold text-[#f59e0b]">{w.weight}% weight</div>
+                  <div className="font-mono font-bold text-[#f59e0b]">
+                    {t('about.model.weight', { weight: w.weight })}
+                  </div>
                 </div>
                 <div className="h-3 bg-gray-800 rounded-full overflow-hidden">
                   <div
@@ -84,7 +83,7 @@ export default function AboutPage() {
           </div>
 
           <div className="border-t border-[#1f2937] pt-6 flex items-center justify-between text-[10px] font-mono text-gray-500">
-            <span>Formula Lock: SCORING_VERSION v1</span>
+            <span>{t('about.model.formulaLock')}</span>
             <span className="text-[#f59e0b]">
               safety_score = 0.3L + 0.25A + 0.20F + 0.15S + 0.1W
             </span>
@@ -95,50 +94,42 @@ export default function AboutPage() {
         <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="bg-[#111827] border border-[#1f2937] rounded-3xl p-8 space-y-4">
             <h3 className="text-base font-black uppercase text-white tracking-wide">
-              Municipal Data Sources
+              {t('about.sources.title')}
             </h3>
             <ul className="space-y-3 text-xs text-gray-400 list-disc pl-4 leading-relaxed">
               <li>
-                <strong className="text-white">OpenStreetMap:</strong> Road hierarchies, lighting
-                nodes, and sidewalk infrastructure.
+                <strong className="text-white">OpenStreetMap:</strong> {t('about.sources.osm')}
               </li>
               <li>
-                <strong className="text-white">HYDRAA:</strong> Monsoon waterlogging hotspots and
-                lake-overflow zones.
+                <strong className="text-white">HYDRAA:</strong> {t('about.sources.hydraa')}
               </li>
               <li>
-                <strong className="text-white">MoRTH:</strong> High-risk traffic black spots and
-                historical accident data.
+                <strong className="text-white">MoRTH:</strong> {t('about.sources.morth')}
               </li>
               <li>
-                <strong className="text-white">Telangana Open Data Portal:</strong> Streetlight
-                locations and drainage coordinates.
+                <strong className="text-white">Telangana Open Data Portal:</strong>{' '}
+                {t('about.sources.tgPortal')}
               </li>
             </ul>
           </div>
 
           <div className="bg-[#111827] border border-[#1f2937] rounded-3xl p-8 space-y-4">
             <h3 className="text-base font-black uppercase text-white tracking-wide">
-              Important Exclusions &amp; Safety
+              {t('about.safety.title')}
             </h3>
             <div className="space-y-3 text-xs text-gray-400 leading-relaxed">
               <div className="p-3.5 rounded-xl bg-[#ef4444]/5 border border-[#ef4444]/20 text-gray-400 space-y-2">
                 <p className="font-extrabold uppercase text-[#ef4444] text-[10px] tracking-wider">
-                  ⚠️ STRICT NON-NEGOTIABLES
+                  ⚠️ {t('about.safety.nonNegotiable')}
                 </p>
                 <p className="text-[11px]">
-                  <strong>No Crime or Policing Data:</strong> StreetCheck does not collect, model,
-                  or discuss policing data, crime statistics, or socioeconomic factors.
+                  <strong>{t('about.safety.noCrimeTitle')}</strong> {t('about.safety.noCrimeDesc')}
                 </p>
                 <p className="text-[11px]">
-                  <strong>Strictly Anonymous:</strong> Reports are logged anonymously using a
-                  locally generated token. No Personal Identifiable Information (PII) is tracked.
+                  <strong>{t('about.safety.anonTitle')}</strong> {t('about.safety.anonDesc')}
                 </p>
               </div>
-              <p>
-                Calculations are restricted to the Hyderabad metropolitan region only. AI summaries
-                and routing insights are powered by context-locked Anthropic Claude APIs.
-              </p>
+              <p>{t('about.safety.exclusionNotes')}</p>
             </div>
           </div>
         </section>
@@ -146,13 +137,15 @@ export default function AboutPage() {
         {/* Built With */}
         <section className="text-center text-xs text-gray-500 border-t border-[#1f2937] pt-8 space-y-2">
           <div>
-            Built with <strong className="text-white">React 18</strong> ·{' '}
-            <strong className="text-white">Vite</strong> ·{' '}
-            <strong className="text-white">Tailwind CSS</strong> ·{' '}
-            <strong className="text-white">PostGIS</strong> ·{' '}
-            <strong className="text-white">Claude AI</strong>
+            <Trans i18nKey="about.footer.builtWith">
+              Built with <strong className="text-white">React 18</strong> ·{' '}
+              <strong className="text-white">Vite</strong> ·{' '}
+              <strong className="text-white">Tailwind CSS</strong> ·{' '}
+              <strong className="text-white">PostGIS</strong> ·{' '}
+              <strong className="text-white">Claude AI</strong>
+            </Trans>
           </div>
-          <div>Inspired by the CrystalRoof UK safety platform. Swecha Hackathon 2026.</div>
+          <div>{t('about.footer.inspiration')}</div>
         </section>
       </main>
     </div>

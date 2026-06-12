@@ -19,6 +19,17 @@ const client = axios.create({
   baseURL: '',
 })
 
+client.interceptors.request.use((config) => {
+  const store = useSessionStore.getState()
+  config.headers['x-ai-provider'] = store.aiProvider
+  if (store.aiApiKey) {
+    config.headers['x-ai-api-key'] = store.aiApiKey
+  }
+  config.headers['x-ollama-host'] = store.ollamaHost
+  config.headers['x-ollama-model'] = store.ollamaModel
+  return config
+})
+
 export interface BboxQuery {
   minLng: number
   minLat: number
@@ -148,6 +159,13 @@ export const api = {
     photoUrl: string
   ): Promise<{ suggestedType: HazardType | null; confidence: number }> => {
     const { data } = await client.post('/api/ai/detect-photo', { photoUrl })
+    return data
+  },
+
+  classifyText: async (
+    text: string
+  ): Promise<{ suggestedType: HazardType | null; confidence: number }> => {
+    const { data } = await client.post('/api/ai/classify-text', { text })
     return data
   },
 
