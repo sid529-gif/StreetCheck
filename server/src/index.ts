@@ -52,12 +52,16 @@ import reportsRouter from './routes/reports.js'
 import routesRouter from './routes/routes.js'
 import aiRouter from './routes/ai.js'
 import statsRouter from './routes/stats.js'
+import areasRouter from './routes/areas.js'
+import reviewsRouter from './routes/reviews.js'
 
 app.use('/api/segments', segmentsRouter)
 app.use('/api/reports', reportsRouter)
 app.use('/api/routes', routesRouter)
 app.use('/api/ai', aiRouter)
 app.use('/api/stats', statsRouter)
+app.use('/api/areas', areasRouter)
+app.use('/api/reviews', reviewsRouter)
 
 // ── Health check ──────────────────────────────────────────────────────────────
 

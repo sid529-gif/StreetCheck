@@ -93,3 +93,15 @@ model DataRefreshLog {
   @@index([source, createdAt], name: "data_refresh_log_source_idx")
   @@map("data_refresh_log")
 }
+
+// ── Citizen Reviews ───────────────────────────────────────────────────────────
+model Review {
+  id        String   @id @default(cuid())
+  name      String
+  rating    Int      @default(5)
+  comment   String
+  email     String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("reviews")
+}

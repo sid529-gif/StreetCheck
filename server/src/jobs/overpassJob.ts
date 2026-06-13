@@ -132,10 +132,10 @@ async function pollOverpass(): Promise<void> {
 
     const safetyScore = computeSafetyScore({
       lightingScore: ls,
-      accidentRate: ar,
       floodRisk: fr,
       surfaceQuality: sq,
       walkabilityScore: ws,
+      activeReports: 0,
     })
 
     await prisma.roadSegment.upsert({

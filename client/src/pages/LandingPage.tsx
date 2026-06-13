@@ -9,6 +9,7 @@ export default function LandingPage() {
   const [stats, setStats] = useState<AppStats>({
     segmentCount: 70124,
     activeReports: 12,
+    safetyIndex: 0.76,
     lastRefreshed: new Date().toISOString(),
   })
   const [loadingStats, setLoadingStats] = useState(true)

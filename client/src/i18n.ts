@@ -15,7 +15,9 @@ i18n
       hi: { translation: hi },
       te: { translation: te },
     },
+    supportedLngs: ['en', 'hi', 'te'],
     fallbackLng: 'en',
+    load: 'languageOnly',
     interpolation: {
       escapeValue: false, // React already safeguards from XSS
     },

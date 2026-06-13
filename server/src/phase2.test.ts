@@ -18,10 +18,10 @@ describe('computeSafetyScore', () => {
   it('returns 1.0 for a perfect segment', () => {
     const score = computeSafetyScore({
       lightingScore: 1,
-      accidentRate: 0,
       floodRisk: 0,
       surfaceQuality: 1,
       walkabilityScore: 1,
+      activeReports: 0,
     })
     expect(score).toBe(1.0)
   })
@@ -29,32 +29,32 @@ describe('computeSafetyScore', () => {
   it('returns 0.0 for the worst-case segment', () => {
     const score = computeSafetyScore({
       lightingScore: 0,
-      accidentRate: 1,
       floodRisk: 1,
       surfaceQuality: 0,
       walkabilityScore: 0,
+      activeReports: 5,
     })
     expect(score).toBe(0.0)
   })
 
   it('matches the locked formula for a known input', () => {
-    // lighting=0.8, accident=0.1, flood=0.1, surface=0.7, walkability=0.6
-    // = 0.30*0.8 + 0.25*(1-0.1) + 0.20*(1-0.1) + 0.15*0.7 + 0.10*0.6
-    // = 0.24 + 0.225 + 0.18 + 0.105 + 0.06 = 0.81
+    // lighting=0.8, floodRisk=0.1 (floodScore=0.9), surface=0.7, walkability=0.6, activeReports=1 (community=0.8)
+    // = 0.30*0.8 + 0.25*0.9 + 0.20*0.7 + 0.15*0.6 + 0.10*0.8
+    // = 0.24 + 0.225 + 0.14 + 0.09 + 0.08 = 0.775
     const score = computeSafetyScore({
       lightingScore: 0.8,
-      accidentRate: 0.1,
       floodRisk: 0.1,
       surfaceQuality: 0.7,
       walkabilityScore: 0.6,
+      activeReports: 1,
     })
-    expect(score).toBeCloseTo(0.81, 4)
+    expect(score).toBeCloseTo(0.775, 4)
   })
 
   it('uses the WEIGHTS constants from shared package', () => {
     // Verify weights sum to 1.0
     const sum =
-      WEIGHTS.lighting + WEIGHTS.accident + WEIGHTS.flood + WEIGHTS.surface + WEIGHTS.walkability
+      WEIGHTS.lighting + WEIGHTS.flood + WEIGHTS.surface + WEIGHTS.walkability + WEIGHTS.community
     expect(sum).toBeCloseTo(1.0, 10)
   })
 
@@ -62,10 +62,10 @@ describe('computeSafetyScore', () => {
     // Mid-range inputs
     const score = computeSafetyScore({
       lightingScore: 0.5,
-      accidentRate: 0.5,
       floodRisk: 0.5,
       surfaceQuality: 0.5,
       walkabilityScore: 0.5,
+      activeReports: 2.5, // community = 1 - 2.5 * 0.2 = 0.5
     })
     // = 0.30*0.5 + 0.25*0.5 + 0.20*0.5 + 0.15*0.5 + 0.10*0.5 = 0.5
     expect(score).toBeCloseTo(0.5, 4)

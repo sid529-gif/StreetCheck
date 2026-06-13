@@ -11,6 +11,13 @@ router.get('/', async (_req, res) => {
       where: { expiresAt: { gt: new Date() } },
     })
 
+    const avgSafetyScoreResult = await prisma.roadSegment.aggregate({
+      _avg: {
+        safetyScore: true,
+      },
+    })
+    const safetyIndex = avgSafetyScoreResult._avg.safetyScore ?? 0.76
+
     // Find the latest refresh log or default to now
     const lastLog = await prisma.dataRefreshLog.findFirst({
       orderBy: { createdAt: 'desc' },
@@ -20,6 +27,7 @@ router.get('/', async (_req, res) => {
     res.json({
       segmentCount,
       activeReports,
+      safetyIndex,
       lastRefreshed,
     })
   } catch (err: any) {

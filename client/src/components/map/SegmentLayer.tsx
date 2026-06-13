@@ -60,41 +60,67 @@ function SegmentPolyline({
   const [hovered, setHovered] = useState(false)
   const activeLayer = useMapStore((state) => state.activeLayer)
   const coords = feature.geometry.coordinates.map((c) => [c[1], c[0]]) as [number, number][]
-  const {
-    name,
-    safetyScore,
-    safetyBand,
-    lightingScore,
-    floodRisk,
-    surfaceQuality,
-    walkabilityScore,
-  } = feature.properties
+  const { name, safetyScore, lightingScore, floodRisk, surfaceQuality, walkabilityScore } =
+    feature.properties
 
   let color = '#6b7280'
   let layerLabel = 'Safety Score'
   let layerValue = Math.round(safetyScore * 100)
 
   if (activeLayer === 'composite') {
-    color = safetyBand === 'green' ? '#22c55e' : safetyBand === 'amber' ? '#f59e0b' : '#ef4444'
     layerLabel = 'Safety Score'
     layerValue = Math.round(safetyScore * 100)
+    if (layerValue <= 20)
+      color = '#991b1b' // Dark Red
+    else if (layerValue <= 40)
+      color = '#ef4444' // Red
+    else if (layerValue <= 60)
+      color = '#f97316' // Orange
+    else if (layerValue <= 75)
+      color = '#eab308' // Yellow
+    else if (layerValue <= 90)
+      color = '#4ade80' // Light Green
+    else color = '#15803d' // Dark Green
   } else if (activeLayer === 'lighting') {
-    color = lightingScore >= 0.75 ? '#3b82f6' : lightingScore >= 0.45 ? '#60a5fa' : '#1e3a8a'
     layerLabel = 'Lighting Score'
     layerValue = Math.round(lightingScore * 100)
+    if (layerValue >= 76)
+      color = '#22c55e' // Green
+    else if (layerValue >= 41)
+      color = '#eab308' // Yellow
+    else color = '#ef4444' // Red
   } else if (activeLayer === 'flood') {
-    const floodSafety = 1 - floodRisk
-    color = floodSafety >= 0.75 ? '#0d9488' : floodSafety >= 0.45 ? '#f59e0b' : '#ef4444'
-    layerLabel = 'Flood Safety'
-    layerValue = Math.round(floodSafety * 100)
+    layerLabel = 'Flood Risk'
+    layerValue = Math.round(floodRisk * 100)
+    if (layerValue <= 20)
+      color = '#22c55e' // Green (Low Risk)
+    else if (layerValue <= 50)
+      color = '#eab308' // Yellow (Medium Risk)
+    else if (layerValue <= 80)
+      color = '#ef4444' // Red (High Risk)
+    else color = '#991b1b' // Dark Red (Extreme Risk)
   } else if (activeLayer === 'surface') {
-    color = surfaceQuality >= 0.75 ? '#10b981' : surfaceQuality >= 0.45 ? '#eab308' : '#ef4444'
     layerLabel = 'Surface Quality'
     layerValue = Math.round(surfaceQuality * 100)
+    if (layerValue >= 76)
+      color = '#22c55e' // Green (Excellent)
+    else if (layerValue >= 51)
+      color = '#eab308' // Yellow (Fair)
+    else if (layerValue >= 26)
+      color = '#f97316' // Orange (Poor)
+    else color = '#ef4444' // Red (Damaged)
   } else if (activeLayer === 'walkability') {
-    color = walkabilityScore >= 0.75 ? '#6366f1' : walkabilityScore >= 0.45 ? '#8b5cf6' : '#64748b'
     layerLabel = 'Walkability'
     layerValue = Math.round(walkabilityScore * 100)
+    if (layerValue >= 91)
+      color = '#15803d' // Dark Green (Excellent)
+    else if (layerValue >= 76)
+      color = '#22c55e' // Green (Good)
+    else if (layerValue >= 51)
+      color = '#eab308' // Yellow (Average)
+    else if (layerValue >= 26)
+      color = '#f97316' // Orange (Poor)
+    else color = '#ef4444' // Red (Very Poor)
   }
 
   return (
@@ -176,7 +202,7 @@ export function SegmentLayer() {
   return (
     <>
       {isFetching && (
-        <div className="absolute top-16 left-4 z-[1000] bg-[#111827]/90 backdrop-blur-sm border border-[#1f2937] p-3.5 rounded-xl shadow-xl flex flex-col gap-2 w-48 animate-pulse pointer-events-none">
+        <div className="absolute top-40 left-4 md:top-24 md:left-4 z-[1000] bg-[#111827]/90 backdrop-blur-sm border border-[#1f2937] p-3.5 rounded-xl shadow-xl flex flex-col gap-2 w-48 animate-pulse pointer-events-none">
           <div className="text-[10px] font-black uppercase tracking-wider text-[#f59e0b] flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-[#f59e0b] animate-ping" />
             Syncing Map Data...

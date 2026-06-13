@@ -250,10 +250,10 @@ async function seed(): Promise<void> {
 
     const safetyScore = computeSafetyScore({
       lightingScore,
-      accidentRate,
       floodRisk,
       surfaceQuality,
       walkabilityScore,
+      activeReports: 0,
     })
     const safetyBand = getSafetyBand(safetyScore)
     const bbox = computeBbox(coords)

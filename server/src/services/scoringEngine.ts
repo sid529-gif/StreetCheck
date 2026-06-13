@@ -15,7 +15,6 @@ export async function recalculateSegmentScore(segmentId: string): Promise<void> 
     where: { id: segmentId },
     select: {
       lightingScore: true,
-      accidentRate: true,
       floodRisk: true,
       surfaceQuality: true,
       walkabilityScore: true,
@@ -23,18 +22,14 @@ export async function recalculateSegmentScore(segmentId: string): Promise<void> 
     },
   })
 
-  // Apply a small active-report penalty: each active report reduces score by 0.02 (capped at 0.2)
-  const reportPenalty = Math.min(segment.activeReports * 0.02, 0.2)
-
-  const rawScore = computeSafetyScore({
+  const safetyScore = computeSafetyScore({
     lightingScore: segment.lightingScore,
-    accidentRate: segment.accidentRate,
     floodRisk: segment.floodRisk,
     surfaceQuality: segment.surfaceQuality,
     walkabilityScore: segment.walkabilityScore,
+    activeReports: segment.activeReports,
   })
 
-  const safetyScore = Math.max(0, rawScore - reportPenalty)
   const safetyBand = getSafetyBand(safetyScore)
 
   await prisma.roadSegment.update({

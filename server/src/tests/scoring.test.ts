@@ -21,10 +21,10 @@ describe('computeSafetyScore', () => {
   it('returns 1.0 for perfect scores on all dimensions', () => {
     const score = computeSafetyScore({
       lightingScore: 1.0,
-      accidentRate: 0.0,
       floodRisk: 0.0,
       surfaceQuality: 1.0,
       walkabilityScore: 1.0,
+      activeReports: 0,
     })
     expect(score).toBe(1.0)
   })
@@ -32,10 +32,10 @@ describe('computeSafetyScore', () => {
   it('returns 0.0 for worst scores on all dimensions', () => {
     const score = computeSafetyScore({
       lightingScore: 0.0,
-      accidentRate: 1.0,
       floodRisk: 1.0,
       surfaceQuality: 0.0,
       walkabilityScore: 0.0,
+      activeReports: 5,
     })
     expect(score).toBe(0.0)
   })
@@ -43,50 +43,39 @@ describe('computeSafetyScore', () => {
   it('applies lighting weight of 0.30 correctly', () => {
     const score = computeSafetyScore({
       lightingScore: 1.0,
-      accidentRate: 1.0,
       floodRisk: 1.0,
       surfaceQuality: 0.0,
       walkabilityScore: 0.0,
+      activeReports: 5,
     })
     expect(score).toBeCloseTo(0.3, 4)
   })
 
-  it('applies (1 - accidentRate) correctly', () => {
+  it('applies flood weight of 0.25 correctly', () => {
     const score = computeSafetyScore({
       lightingScore: 0.0,
-      accidentRate: 0.2,
-      floodRisk: 1.0,
+      floodRisk: 0.2, // floodScore = 0.8
       surfaceQuality: 0.0,
       walkabilityScore: 0.0,
+      activeReports: 5,
     })
     expect(score).toBeCloseTo(0.2, 4)
-  })
-
-  it('applies (1 - floodRisk) correctly', () => {
-    const score = computeSafetyScore({
-      lightingScore: 0.0,
-      accidentRate: 1.0,
-      floodRisk: 0.3,
-      surfaceQuality: 0.0,
-      walkabilityScore: 0.0,
-    })
-    expect(score).toBeCloseTo(0.14, 4)
   })
 
   it('clamps output to [0, 1] range', () => {
     const worst = computeSafetyScore({
       lightingScore: 0,
-      accidentRate: 1,
       floodRisk: 1,
       surfaceQuality: 0,
       walkabilityScore: 0,
+      activeReports: 5,
     })
     const best = computeSafetyScore({
       lightingScore: 1,
-      accidentRate: 0,
       floodRisk: 0,
       surfaceQuality: 1,
       walkabilityScore: 1,
+      activeReports: 0,
     })
     expect(worst).toBeGreaterThanOrEqual(0)
     expect(best).toBeLessThanOrEqual(1)
@@ -123,7 +112,6 @@ describe('recalculateSegmentScore', () => {
   it('updates safetyScore and safetyBand correctly with no active reports', async () => {
     vi.mocked(prisma.roadSegment.findUniqueOrThrow).mockResolvedValueOnce({
       lightingScore: 1.0,
-      accidentRate: 0.0,
       floodRisk: 0.0,
       surfaceQuality: 1.0,
       walkabilityScore: 1.0,
@@ -142,7 +130,7 @@ describe('recalculateSegmentScore', () => {
       data: {
         safetyScore: 1.0,
         safetyBand: 'green',
-        scoringVersion: 1,
+        scoringVersion: 2,
       },
     })
   })
@@ -150,7 +138,6 @@ describe('recalculateSegmentScore', () => {
   it('applies penalty for active reports and clamps to 0', async () => {
     vi.mocked(prisma.roadSegment.findUniqueOrThrow).mockResolvedValueOnce({
       lightingScore: 0.0,
-      accidentRate: 1.0,
       floodRisk: 1.0,
       surfaceQuality: 0.0,
       walkabilityScore: 0.0,
@@ -164,7 +151,7 @@ describe('recalculateSegmentScore', () => {
       data: {
         safetyScore: 0,
         safetyBand: 'red',
-        scoringVersion: 1,
+        scoringVersion: 2,
       },
     })
   })

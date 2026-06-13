@@ -41,6 +41,7 @@ export interface BboxQuery {
 export interface AppStats {
   segmentCount: number
   activeReports: number
+  safetyIndex: number
   lastRefreshed: string
 }
 

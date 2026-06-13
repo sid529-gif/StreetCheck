@@ -79,6 +79,14 @@ export function Navbar() {
           {t('nav.map')}
         </Link>
         <Link
+          to="/reviews"
+          className={`transition-colors hover:text-white ${
+            isActive('/reviews') ? 'text-[#f59e0b]' : 'text-gray-400'
+          }`}
+        >
+          Reviews
+        </Link>
+        <Link
           to="/about"
           className={`transition-colors hover:text-white ${
             isActive('/about') ? 'text-[#f59e0b]' : 'text-gray-400'

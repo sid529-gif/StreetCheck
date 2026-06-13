@@ -194,10 +194,10 @@ async function seedDemoData() {
   for (const s of demoSegments) {
     const rawScore = computeSafetyScore({
       lightingScore: s.lightingScore,
-      accidentRate: s.accidentRate,
       floodRisk: s.floodRisk,
       surfaceQuality: s.surfaceQuality,
       walkabilityScore: s.walkabilityScore,
+      activeReports: 0,
     })
     const safetyBand = getSafetyBand(rawScore)
     const bbox = computeBbox(s.coordinates)

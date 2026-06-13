@@ -1,5 +1,13 @@
 import { useState, useEffect } from 'react'
-import { MapContainer, TileLayer, Polyline, CircleMarker, Tooltip, useMap } from 'react-leaflet'
+import {
+  MapContainer,
+  TileLayer,
+  Polyline,
+  CircleMarker,
+  Tooltip,
+  useMap,
+  Circle,
+} from 'react-leaflet'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { useMapStore, type ActiveLayer } from '../store/mapStore.js'
@@ -8,6 +16,9 @@ import { api, type RouteResult } from '../services/api.js'
 import { SegmentLayer } from '../components/map/SegmentLayer.js'
 import { ReportPins } from '../components/map/ReportPins.js'
 import { SegmentDetailCard } from '../components/map/SegmentDetailCard.js'
+import { AreaIntelligencePanel } from '../components/map/AreaIntelligencePanel.js'
+import { FloatingStatsCard } from '../components/map/FloatingStatsCard.js'
+import { MapLegend } from '../components/map/MapLegend.js'
 import { ReportModal } from '../components/reporting/ReportModal.js'
 import { RouteSearchBar } from '../components/routing/RouteSearchBar.js'
 import { RouteComparisonPanel } from '../components/routing/RouteComparisonPanel.js'
@@ -56,9 +67,19 @@ function MapController({
   return null
 }
 
+const NEIGHBORHOOD_AREAS = [
+  { key: 'banjarahills', lat: 17.415, lng: 78.434, name: 'Banjara Hills' },
+  { key: 'kondapur', lat: 17.462, lng: 78.356, name: 'Kondapur' },
+  { key: 'madhapur', lat: 17.448, lng: 78.39, name: 'Madhapur' },
+  { key: 'gachibowli', lat: 17.44, lng: 78.348, name: 'Gachibowli' },
+  { key: 'jubileehills', lat: 17.43, lng: 78.41, name: 'Jubilee Hills' },
+]
+
 export default function MapPage() {
   const { t } = useTranslation()
   const selectedSegmentId = useMapStore((state) => state.selectedSegmentId)
+  const selectedAreaName = useMapStore((state) => state.selectedAreaName)
+  const setSelectedAreaName = useMapStore((state) => state.setSelectedAreaName)
   const activeLayer = useMapStore((state) => state.activeLayer)
   const setActiveLayer = useMapStore((state) => state.setActiveLayer)
   const { routeOrigin, routeDestination, setOrigin, setDestination } = useSessionStore()
@@ -137,11 +158,15 @@ export default function MapPage() {
       >
         {/* LEFT SIDEBAR: Fixed 320px width, fills height */}
         <div
-          className={`w-full md:w-[320px] h-[40vh] md:h-full bg-[#111827] border-b md:border-b-0 md:border-r border-[#1f2937] flex-col z-10 flex-shrink-0 overflow-y-auto order-last md:order-first ${selectedSegmentId ? 'hidden md:flex' : 'flex'}`}
+          className={`w-full md:w-[320px] h-[40vh] md:h-full bg-[#111827] border-b md:border-b-0 md:border-r border-[#1f2937] flex-col z-10 flex-shrink-0 overflow-y-auto order-last md:order-first ${selectedSegmentId || selectedAreaName ? 'hidden md:flex' : 'flex'}`}
         >
           {selectedSegmentId ? (
             <div className="hidden md:block h-full">
               <SegmentDetailCard onOpenReport={() => setIsReportModalOpen(true)} />
+            </div>
+          ) : selectedAreaName ? (
+            <div className="hidden md:block h-full">
+              <AreaIntelligencePanel />
             </div>
           ) : routes ? (
             <RouteComparisonPanel
@@ -197,6 +222,32 @@ export default function MapPage() {
 
             <SegmentLayer />
             <ReportPins />
+
+            {NEIGHBORHOOD_AREAS.map((area) => (
+              <Circle
+                key={area.key}
+                center={[area.lat, area.lng]}
+                radius={400}
+                pathOptions={{
+                  color: selectedAreaName === area.key ? '#f59e0b' : '#3b82f6',
+                  fillColor: selectedAreaName === area.key ? '#f59e0b' : '#3b82f6',
+                  fillOpacity: selectedAreaName === area.key ? 0.35 : 0.15,
+                  weight: selectedAreaName === area.key ? 3 : 1.5,
+                }}
+                eventHandlers={{
+                  click: () => {
+                    setSelectedAreaName(area.key)
+                  },
+                }}
+              >
+                <Tooltip direction="top" opacity={0.9}>
+                  <div className="font-semibold text-xs text-slate-800">{area.name}</div>
+                  <div className="text-[9px] text-slate-500 mt-0.5">
+                    Click for Area Intelligence
+                  </div>
+                </Tooltip>
+              </Circle>
+            ))}
 
             <MapController origin={routeOrigin} destination={routeDestination} />
 
@@ -280,6 +331,12 @@ export default function MapPage() {
             )}
           </MapContainer>
 
+          {/* Floating Stats Card (Top Left) */}
+          <FloatingStatsCard />
+
+          {/* Dynamic Interactive Legend (Bottom Left) */}
+          <MapLegend />
+
           {/* Floating FAB Report Button (Bottom Right) */}
           <button
             onClick={() => {
@@ -307,6 +364,13 @@ export default function MapPage() {
       {selectedSegmentId && (
         <div className="md:hidden">
           <SegmentDetailCard onOpenReport={() => setIsReportModalOpen(true)} />
+        </div>
+      )}
+
+      {/* Mobile Bottom Sheet for Area Detail */}
+      {selectedAreaName && (
+        <div className="md:hidden">
+          <AreaIntelligencePanel />
         </div>
       )}
 
