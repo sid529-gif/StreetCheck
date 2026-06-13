@@ -1,15 +1,8 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import Navbar from '../components/navigation/Navbar.js'
-
-interface Review {
-  id: string
-  name: string
-  rating: number
-  comment: string
-  email?: string | null
-  createdAt: string
-}
+import { api } from '../services/api.js'
+import type { Review } from '../services/api.js'
 
 export default function ReviewsPage() {
   const queryClient = useQueryClient()
@@ -27,34 +20,13 @@ export default function ReviewsPage() {
     error,
   } = useQuery<Review[]>({
     queryKey: ['reviews'],
-    queryFn: async () => {
-      const res = await fetch('/api/reviews')
-      if (!res.ok) throw new Error('Failed to fetch reviews')
-      return res.json()
-    },
+    queryFn: () => api.getReviews(),
   })
 
   // Submit review mutation
   const submitMutation = useMutation({
-    mutationFn: async (newReview: {
-      name: string
-      rating: number
-      comment: string
-      email?: string
-    }) => {
-      const res = await fetch('/api/reviews', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newReview),
-      })
-      if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.message || 'Failed to submit review')
-      }
-      return res.json()
-    },
+    mutationFn: (newReview: { name: string; rating: number; comment: string; email?: string }) =>
+      api.submitReview(newReview),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reviews'] })
       setModalOpen(false)

@@ -5,7 +5,7 @@ import { resolve } from 'path'
 // GitHub Pages hosts at /StreetCheck/ — set base in CI via VITE_BASE_URL
 // Locally it stays as '/'
 export default defineConfig({
-  base: '/StreetCheck/',
+  base: process.env.VITE_BASE_URL || '/StreetCheck/',
   plugins: [react()],
   resolve: {
     alias: {

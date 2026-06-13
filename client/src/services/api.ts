@@ -16,7 +16,7 @@ import type {
 } from '@streetcheck/shared'
 
 const client = axios.create({
-  baseURL: '',
+  baseURL: import.meta.env.VITE_API_BASE_URL || '',
 })
 
 client.interceptors.request.use((config) => {
@@ -111,6 +111,22 @@ export interface ReportPin {
   segmentId: string
   createdAt: string
   expiresAt: string
+}
+
+export interface Review {
+  id: string
+  name: string
+  rating: number
+  comment: string
+  email?: string | null
+  createdAt: string
+}
+
+export interface SubmitReviewInput {
+  name: string
+  rating: number
+  comment: string
+  email?: string
 }
 
 export type { RouteResult }
@@ -248,6 +264,16 @@ export const api = {
 
   getStats: async (): Promise<AppStats> => {
     const { data } = await client.get<AppStats>('/api/stats')
+    return data
+  },
+
+  getReviews: async (): Promise<Review[]> => {
+    const { data } = await client.get<Review[]>('/api/reviews')
+    return data
+  },
+
+  submitReview: async (input: SubmitReviewInput): Promise<Review> => {
+    const { data } = await client.post<Review>('/api/reviews', input)
     return data
   },
 }
