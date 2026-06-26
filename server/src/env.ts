@@ -1,7 +1,7 @@
-import dotenv from 'dotenv'
 import { existsSync } from 'fs'
 import { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
+import dotenv from 'dotenv'
 import { z } from 'zod'
 
 // Load .env from the monorepo root (two levels up from server/src/)
