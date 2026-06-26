@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { useTranslation, Trans } from 'react-i18next'
-import { api, type AppStats } from '../services/api.js'
 import Navbar from '../components/navigation/Navbar.js'
+import { type AppStats, api } from '../services/api.js'
 
 export default function LandingPage() {
   const { t } = useTranslation()

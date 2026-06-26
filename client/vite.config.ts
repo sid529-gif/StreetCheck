@@ -1,6 +1,6 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
+import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite'
 
 // GitHub Pages hosts at /StreetCheck/ — set base in CI via VITE_BASE_URL
 // Locally it stays as '/'

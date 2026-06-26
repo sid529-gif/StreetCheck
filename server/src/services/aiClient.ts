@@ -1,7 +1,7 @@
 import { Anthropic } from '@anthropic-ai/sdk'
+import type { HazardType } from '@streetcheck/shared'
 import axios from 'axios'
 import { env } from '../env.js'
-import type { HazardType } from '@streetcheck/shared'
 import type { RouteOption } from './routingService.js'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -57,11 +57,11 @@ export interface SegmentDetail {
     maxLng: number
     maxLat: number
   }
-  lightingScore: number
-  accidentRate: number
-  floodRisk: number
-  surfaceQuality: number
-  walkabilityScore: number
+  school: number
+  hospital: number
+  park: number
+  bus_stop: number
+  footpath: number
   safetyScore: number
   safetyBand: 'green' | 'amber' | 'red'
   scoringVersion: number
@@ -82,11 +82,11 @@ export interface SegmentContext {
   name: string | null
   safetyScore: number
   safetyBand: string
-  lightingScore: number
-  accidentRate: number
-  floodRisk: number
-  surfaceQuality: number
-  walkabilityScore: number
+  school: number
+  hospital: number
+  park: number
+  bus_stop: number
+  footpath: number
   activeReports: number
 }
 
@@ -351,13 +351,13 @@ export async function getSegmentSummary(
   const provider = config?.provider || 'server'
 
   const prompt = `Summarize the safety conditions of the road segment "${segment.name || 'Unnamed Street'}" in Hyderabad.
-Here are the safety metrics (normalized 0.0 to 1.0, where higher is safer/better, except floodRisk and accidentRate where higher is more hazardous):
+Here are the safety metrics (integer values 0–100, where higher is closer proximity or better/safer):
 - Safety Score: ${segment.safetyScore} (${segment.safetyBand})
-- Lighting Score: ${segment.lightingScore}
-- Walkability Score: ${segment.walkabilityScore}
-- Surface Quality Score: ${segment.surfaceQuality}
-- Flood Risk: ${segment.floodRisk}
-- Accident Rate: ${segment.accidentRate}
+- School Proximity: ${segment.school}
+- Hospital Proximity: ${segment.hospital}
+- Park Proximity: ${segment.park}
+- Bus Stop Proximity: ${segment.bus_stop}
+- Footpath Presence: ${segment.footpath}
 - Active Citizen Hazard Reports: ${segment.activeReports}
 - Road classification: ${segment.osmHighway || 'unknown'}
 
@@ -368,7 +368,7 @@ Please provide a brief, professional summary of this segment's safety conditions
       return await queryOllama(config!, SYSTEM_PROMPT, prompt)
     } catch (err) {
       console.error('[aiClient] Ollama summary failed:', err)
-      return `Safety Score: ${segment.safetyScore} (${segment.safetyBand}). Lighting is ${segment.lightingScore}. Active reports: ${segment.activeReports}. (Ollama offline)`
+      return `Safety Score: ${segment.safetyScore} (${segment.safetyBand}). School Proximity is ${segment.school}, Footpath Presence is ${segment.footpath}. Active reports: ${segment.activeReports}. (Ollama offline)`
     }
   }
 
@@ -395,7 +395,7 @@ Please provide a brief, professional summary of this segment's safety conditions
       }
       return await queryOllama(ollamaConfig, SYSTEM_PROMPT, prompt)
     } catch {
-      return `The segment "${segment.name || 'Unnamed Street'}" has a safety score of ${segment.safetyScore} (${segment.safetyBand}). It has ${segment.activeReports} active citizen reports and lighting index of ${segment.lightingScore}.`
+      return `The segment "${segment.name || 'Unnamed Street'}" has a safety score of ${segment.safetyScore} (${segment.safetyBand}). It has ${segment.activeReports} active citizen reports, school score of ${segment.school}, and footpath presence score of ${segment.footpath}.`
     }
   }
   throw new Error('Unexpected empty response from Claude API')
@@ -483,7 +483,7 @@ Context on nearby road segments in Hyderabad:
 ${context
   .map(
     (seg, idx) =>
-      `Segment ${idx + 1}: ${seg.name || 'Unnamed Street'} (Score: ${seg.safetyScore}, Band: ${seg.safetyBand}, Lighting: ${seg.lightingScore}, Flood Risk: ${seg.floodRisk}, Active Reports: ${seg.activeReports})`
+      `Segment ${idx + 1}: ${seg.name || 'Unnamed Street'} (Score: ${seg.safetyScore}, Band: ${seg.safetyBand}, School: ${seg.school}, Hospital: ${seg.hospital}, Park: ${seg.park}, Bus Stop: ${seg.bus_stop}, Footpath: ${seg.footpath}, Active Reports: ${seg.activeReports})`
   )
   .join('\n')}
 

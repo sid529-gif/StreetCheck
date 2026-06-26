@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useTranslation, Trans } from 'react-i18next'
 import type { HazardType } from '@streetcheck/shared'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useEffect, useState } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
+import { type SegmentDetail, api } from '../../services/api.js'
+import { useSessionStore } from '../../store/sessionStore.js'
 import { HazardIconGrid } from './HazardIconGrid.js'
 import { PhotoUploader } from './PhotoUploader.js'
-import { api, type SegmentDetail } from '../../services/api.js'
-import { useSessionStore } from '../../store/sessionStore.js'
 
 interface ReportModalProps {
   segment: SegmentDetail

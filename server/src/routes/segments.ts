@@ -1,8 +1,8 @@
 import { Router } from 'express'
 import type { Request, Response } from 'express'
 import { z } from 'zod'
-import { prisma } from '../db/prisma.js'
 import { getSegmentsByBbox } from '../db/geoQueries.js'
+import { prisma } from '../db/prisma.js'
 import { validateQuery } from '../middleware/validate.js'
 
 const router = Router()
@@ -56,11 +56,11 @@ router.get('/', validateQuery(BboxQuerySchema), async (req: Request, res: Respon
       osmHighway: seg.osmHighway,
       osmLit: seg.osmLit,
       name: seg.name,
-      lightingScore: seg.lightingScore,
-      accidentRate: seg.accidentRate,
-      floodRisk: seg.floodRisk,
-      surfaceQuality: seg.surfaceQuality,
-      walkabilityScore: seg.walkabilityScore,
+      school: seg.school,
+      hospital: seg.hospital,
+      park: seg.park,
+      bus_stop: seg.bus_stop,
+      footpath: seg.footpath,
     },
   }))
 
@@ -102,11 +102,11 @@ router.get('/:id', async (req: Request, res: Response) => {
     geometry: segment.geometry,
     bbox: segment.bbox,
     // Score dimensions
-    lightingScore: segment.lightingScore,
-    accidentRate: segment.accidentRate,
-    floodRisk: segment.floodRisk,
-    surfaceQuality: segment.surfaceQuality,
-    walkabilityScore: segment.walkabilityScore,
+    school: segment.school,
+    hospital: segment.hospital,
+    park: segment.park,
+    bus_stop: segment.bus_stop,
+    footpath: segment.footpath,
     // Computed
     safetyScore: segment.safetyScore,
     safetyBand: segment.safetyBand,

@@ -3,10 +3,10 @@
  * Fetches fresh OSM way data for Hyderabad and upserts changed segments.
  */
 
-import cron from 'node-cron'
-import axios from 'axios'
 import { PrismaClient } from '@prisma/client'
-import { computeSafetyScore, getSafetyBand, SCORING_VERSION } from '@streetcheck/shared'
+import { SCORING_VERSION, computeSafetyScore, getSafetyBand } from '@streetcheck/shared'
+import axios from 'axios'
+import cron from 'node-cron'
 import { computeBbox } from '../db/geoQueries.js'
 import { env } from '../env.js'
 
@@ -36,44 +36,10 @@ interface OverpassResponse {
   elements: (OverpassNode | OverpassWay)[]
 }
 
-function lightingScore(lit: string | undefined): number {
-  return (
-    ({ yes: 0.9, '24/7': 1.0, automatic: 0.85, no: 0.1 } as Record<string, number>)[lit ?? ''] ??
-    0.5
-  )
-}
-function surfaceScore(surface: string | undefined): number {
-  return (
-    (
-      {
-        asphalt: 0.9,
-        paved: 0.85,
-        concrete: 0.85,
-        compacted: 0.55,
-        unpaved: 0.3,
-        dirt: 0.2,
-      } as Record<string, number>
-    )[surface ?? ''] ?? 0.6
-  )
-}
 function walkScore(footway: string | undefined, sidewalk: string | undefined): number {
   if (['yes', 'both', 'left', 'right'].includes(sidewalk ?? '') || footway === 'yes') return 0.9
   if (footway === 'no') return 0.2
   return 0.5
-}
-function accidentScore(highway: string | undefined): number {
-  return (
-    (
-      {
-        primary: 0.2,
-        secondary: 0.15,
-        tertiary: 0.12,
-        residential: 0.08,
-        service: 0.06,
-        pedestrian: 0.03,
-      } as Record<string, number>
-    )[highway ?? ''] ?? 0.1
-  )
 }
 
 async function pollOverpass(): Promise<void> {
@@ -124,18 +90,19 @@ async function pollOverpass(): Promise<void> {
     }
     if (coords.length < 2) continue
 
-    const ls = lightingScore(tags['lit'])
-    const sq = surfaceScore(tags['surface'])
-    const ws = walkScore(tags['footway'], tags['sidewalk'])
-    const ar = accidentScore(tags['highway'])
-    const fr = 0.1
+    const footpathScore = walkScore(tags['footway'], tags['sidewalk']) // footpath presence
+    const hospitalProx = 50 // default mid-value until spatial data is piped in
+    const schoolProx = 50
+    const parkProx = 50
+    const busStopProx = 50 // default mid-value until spatial data is piped in
+    const footpathVal = Math.round(footpathScore * 100)
 
     const safetyScore = computeSafetyScore({
-      lightingScore: ls,
-      floodRisk: fr,
-      surfaceQuality: sq,
-      walkabilityScore: ws,
-      activeReports: 0,
+      school: schoolProx,
+      hospital: hospitalProx,
+      park: parkProx,
+      bus_stop: busStopProx,
+      footpath: footpathVal,
     })
 
     await prisma.roadSegment.upsert({
@@ -145,11 +112,11 @@ async function pollOverpass(): Promise<void> {
         name: tags['name'] ?? null,
         geometry: { type: 'LineString', coordinates: coords },
         bbox: { ...computeBbox(coords) },
-        lightingScore: ls,
-        accidentRate: ar,
-        floodRisk: fr,
-        surfaceQuality: sq,
-        walkabilityScore: ws,
+        school: schoolProx,
+        hospital: hospitalProx,
+        park: parkProx,
+        bus_stop: busStopProx,
+        footpath: footpathVal,
         safetyScore,
         safetyBand: getSafetyBand(safetyScore),
         scoringVersion: SCORING_VERSION,
@@ -163,9 +130,11 @@ async function pollOverpass(): Promise<void> {
         name: tags['name'] ?? null,
         geometry: { type: 'LineString', coordinates: coords },
         bbox: { ...computeBbox(coords) },
-        lightingScore: ls,
-        surfaceQuality: sq,
-        walkabilityScore: ws,
+        school: schoolProx,
+        hospital: hospitalProx,
+        park: parkProx,
+        bus_stop: busStopProx,
+        footpath: footpathVal,
         safetyScore,
         safetyBand: getSafetyBand(safetyScore),
         scoringVersion: SCORING_VERSION,

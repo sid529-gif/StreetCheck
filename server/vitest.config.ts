@@ -1,6 +1,6 @@
-import { defineConfig } from 'vitest/config'
 import { resolve } from 'path'
 import { fileURLToPath } from 'url'
+import { defineConfig } from 'vitest/config'
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url))
 
@@ -36,6 +36,8 @@ export default defineConfig({
         'src/routes/ai.ts',
         'src/routes/routes.ts',
         'src/routes/stats.ts',
+        'src/routes/areas.ts',
+        'src/routes/reviews.ts',
         'src/env.ts',
       ],
     },

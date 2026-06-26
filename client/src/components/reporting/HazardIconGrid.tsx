@@ -1,5 +1,5 @@
-import { useTranslation } from 'react-i18next'
 import type { HazardType } from '@streetcheck/shared'
+import { useTranslation } from 'react-i18next'
 
 interface HazardIconGridProps {
   selectedType: HazardType | null

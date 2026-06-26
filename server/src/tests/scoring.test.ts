@@ -17,105 +17,105 @@ vi.mock('../db/prisma.js', () => ({
 import { prisma } from '../db/prisma.js'
 import { recalculateSegmentScore, recalculateAllScores } from '../services/scoringEngine.js'
 
+// ── computeSafetyScore (new five-field schema) ────────────────────────────────
+
 describe('computeSafetyScore', () => {
-  it('returns 1.0 for perfect scores on all dimensions', () => {
+  it('returns 100 for perfect scores on all dimensions', () => {
     const score = computeSafetyScore({
-      lightingScore: 1.0,
-      floodRisk: 0.0,
-      surfaceQuality: 1.0,
-      walkabilityScore: 1.0,
-      activeReports: 0,
+      school: 100,
+      hospital: 100,
+      park: 100,
+      bus_stop: 100,
+      footpath: 100,
     })
-    expect(score).toBe(1.0)
+    expect(score).toBe(100)
   })
 
-  it('returns 0.0 for worst scores on all dimensions', () => {
+  it('returns 0 for worst scores on all dimensions', () => {
     const score = computeSafetyScore({
-      lightingScore: 0.0,
-      floodRisk: 1.0,
-      surfaceQuality: 0.0,
-      walkabilityScore: 0.0,
-      activeReports: 5,
+      school: 0,
+      hospital: 0,
+      park: 0,
+      bus_stop: 0,
+      footpath: 0,
     })
-    expect(score).toBe(0.0)
+    expect(score).toBe(0)
   })
 
-  it('applies lighting weight of 0.30 correctly', () => {
+  it('applies school weight of 0.25 correctly', () => {
     const score = computeSafetyScore({
-      lightingScore: 1.0,
-      floodRisk: 1.0,
-      surfaceQuality: 0.0,
-      walkabilityScore: 0.0,
-      activeReports: 5,
+      school: 100,
+      hospital: 0,
+      park: 0,
+      bus_stop: 0,
+      footpath: 0,
     })
-    expect(score).toBeCloseTo(0.3, 4)
+    expect(score).toBeCloseTo(25, 0)
   })
 
-  it('applies flood weight of 0.25 correctly', () => {
+  it('applies hospital weight of 0.25 correctly', () => {
     const score = computeSafetyScore({
-      lightingScore: 0.0,
-      floodRisk: 0.2, // floodScore = 0.8
-      surfaceQuality: 0.0,
-      walkabilityScore: 0.0,
-      activeReports: 5,
+      school: 0,
+      hospital: 100,
+      park: 0,
+      bus_stop: 0,
+      footpath: 0,
     })
-    expect(score).toBeCloseTo(0.2, 4)
+    expect(score).toBeCloseTo(25, 0)
   })
 
-  it('clamps output to [0, 1] range', () => {
-    const worst = computeSafetyScore({
-      lightingScore: 0,
-      floodRisk: 1,
-      surfaceQuality: 0,
-      walkabilityScore: 0,
-      activeReports: 5,
-    })
+  it('output stays in [0, 100] range', () => {
+    const worst = computeSafetyScore({ school: 0, hospital: 0, park: 0, bus_stop: 0, footpath: 0 })
     const best = computeSafetyScore({
-      lightingScore: 1,
-      floodRisk: 0,
-      surfaceQuality: 1,
-      walkabilityScore: 1,
-      activeReports: 0,
+      school: 100,
+      hospital: 100,
+      park: 100,
+      bus_stop: 100,
+      footpath: 100,
     })
     expect(worst).toBeGreaterThanOrEqual(0)
-    expect(best).toBeLessThanOrEqual(1)
+    expect(best).toBeLessThanOrEqual(100)
   })
 })
 
-describe('scoreToBand', () => {
-  it('returns green for score >= 0.75', () => {
-    expect(getSafetyBand(0.8)).toBe('green')
+// ── getSafetyBand (updated thresholds: green > 75, amber > 45) ────────────────
+
+describe('getSafetyBand', () => {
+  it('returns green for score > 75', () => {
+    expect(getSafetyBand(80)).toBe('green')
   })
 
-  it('returns amber for score >= 0.45 and < 0.75', () => {
-    expect(getSafetyBand(0.6)).toBe('amber')
+  it('returns amber for score > 45 and ≤ 75', () => {
+    expect(getSafetyBand(60)).toBe('amber')
   })
 
-  it('returns red for score < 0.45', () => {
-    expect(getSafetyBand(0.4)).toBe('red')
+  it('returns red for score ≤ 45', () => {
+    expect(getSafetyBand(40)).toBe('red')
   })
 
-  it('returns green for exact boundary 0.75', () => {
-    expect(getSafetyBand(0.75)).toBe('green')
+  it('returns amber for exact boundary 75', () => {
+    expect(getSafetyBand(75)).toBe('amber')
   })
 
-  it('returns amber for exact boundary 0.45', () => {
-    expect(getSafetyBand(0.45)).toBe('amber')
+  it('returns red for exact boundary 45', () => {
+    expect(getSafetyBand(45)).toBe('red')
   })
 })
+
+// ── recalculateSegmentScore ───────────────────────────────────────────────────
 
 describe('recalculateSegmentScore', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
-  it('updates safetyScore and safetyBand correctly with no active reports', async () => {
+  it('updates safetyScore and safetyBand correctly with full proximity scores', async () => {
     vi.mocked(prisma.roadSegment.findUniqueOrThrow).mockResolvedValueOnce({
-      lightingScore: 1.0,
-      floodRisk: 0.0,
-      surfaceQuality: 1.0,
-      walkabilityScore: 1.0,
-      activeReports: 0,
+      school: 100,
+      hospital: 100,
+      park: 100,
+      bus_stop: 100,
+      footpath: 100,
     } as any)
 
     await recalculateSegmentScore('seg1')
@@ -128,20 +128,20 @@ describe('recalculateSegmentScore', () => {
     expect(prisma.roadSegment.update).toHaveBeenCalledWith({
       where: { id: 'seg1' },
       data: {
-        safetyScore: 1.0,
+        safetyScore: 100,
         safetyBand: 'green',
-        scoringVersion: 2,
+        scoringVersion: 3,
       },
     })
   })
 
-  it('applies penalty for active reports and clamps to 0', async () => {
+  it('correctly bands a zero-proximity segment as red', async () => {
     vi.mocked(prisma.roadSegment.findUniqueOrThrow).mockResolvedValueOnce({
-      lightingScore: 0.0,
-      floodRisk: 1.0,
-      surfaceQuality: 0.0,
-      walkabilityScore: 0.0,
-      activeReports: 5,
+      school: 0,
+      hospital: 0,
+      park: 0,
+      bus_stop: 0,
+      footpath: 0,
     } as any)
 
     await recalculateSegmentScore('seg2')
@@ -151,11 +151,13 @@ describe('recalculateSegmentScore', () => {
       data: {
         safetyScore: 0,
         safetyBand: 'red',
-        scoringVersion: 2,
+        scoringVersion: 3,
       },
     })
   })
 })
+
+// ── recalculateAllScores ──────────────────────────────────────────────────────
 
 describe('recalculateAllScores', () => {
   beforeEach(() => {
@@ -170,20 +172,18 @@ describe('recalculateAllScores', () => {
 
     vi.mocked(prisma.roadSegment.findUniqueOrThrow)
       .mockResolvedValueOnce({
-        lightingScore: 1.0,
-        accidentRate: 0.0,
-        floodRisk: 0.0,
-        surfaceQuality: 1.0,
-        walkabilityScore: 1.0,
-        activeReports: 0,
+        school: 90,
+        hospital: 90,
+        park: 85,
+        bus_stop: 90,
+        footpath: 85,
       } as any)
       .mockResolvedValueOnce({
-        lightingScore: 0.0,
-        accidentRate: 1.0,
-        floodRisk: 1.0,
-        surfaceQuality: 0.0,
-        walkabilityScore: 0.0,
-        activeReports: 0,
+        school: 10,
+        hospital: 10,
+        park: 10,
+        bus_stop: 10,
+        footpath: 10,
       } as any)
 
     await recalculateAllScores()

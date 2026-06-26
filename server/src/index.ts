@@ -1,7 +1,7 @@
-import express from 'express'
 import cors from 'cors'
-import helmet from 'helmet'
+import express from 'express'
 import rateLimit from 'express-rate-limit'
+import helmet from 'helmet'
 import winston from 'winston'
 import { env } from './env.js'
 
@@ -47,13 +47,13 @@ app.use(globalLimiter)
 
 // ── Routes ────────────────────────────────────────────────────────────────────
 
-import segmentsRouter from './routes/segments.js'
-import reportsRouter from './routes/reports.js'
-import routesRouter from './routes/routes.js'
 import aiRouter from './routes/ai.js'
-import statsRouter from './routes/stats.js'
 import areasRouter from './routes/areas.js'
+import reportsRouter from './routes/reports.js'
 import reviewsRouter from './routes/reviews.js'
+import routesRouter from './routes/routes.js'
+import segmentsRouter from './routes/segments.js'
+import statsRouter from './routes/stats.js'
 
 app.use('/api/segments', segmentsRouter)
 app.use('/api/reports', reportsRouter)

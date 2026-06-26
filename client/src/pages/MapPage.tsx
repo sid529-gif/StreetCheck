@@ -1,30 +1,30 @@
-import { useState, useEffect } from 'react'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
-  MapContainer,
-  TileLayer,
-  Polyline,
+  Circle,
   CircleMarker,
+  MapContainer,
+  Polyline,
+  TileLayer,
   Tooltip,
   useMap,
-  Circle,
 } from 'react-leaflet'
-import { useMutation, useQuery } from '@tanstack/react-query'
-import { useTranslation } from 'react-i18next'
-import { useMapStore, type ActiveLayer } from '../store/mapStore.js'
-import { useSessionStore } from '../store/sessionStore.js'
-import { api, type RouteResult } from '../services/api.js'
-import { SegmentLayer } from '../components/map/SegmentLayer.js'
-import { ReportPins } from '../components/map/ReportPins.js'
-import { SegmentDetailCard } from '../components/map/SegmentDetailCard.js'
+import { AssistantPanel } from '../components/assistant/AssistantPanel.js'
+import { ChatBubble } from '../components/assistant/ChatBubble.js'
 import { AreaIntelligencePanel } from '../components/map/AreaIntelligencePanel.js'
 import { FloatingStatsCard } from '../components/map/FloatingStatsCard.js'
 import { MapLegend } from '../components/map/MapLegend.js'
-import { ReportModal } from '../components/reporting/ReportModal.js'
-import { RouteSearchBar } from '../components/routing/RouteSearchBar.js'
-import { RouteComparisonPanel } from '../components/routing/RouteComparisonPanel.js'
-import { ChatBubble } from '../components/assistant/ChatBubble.js'
-import { AssistantPanel } from '../components/assistant/AssistantPanel.js'
+import { ReportPins } from '../components/map/ReportPins.js'
+import { SegmentDetailCard } from '../components/map/SegmentDetailCard.js'
+import { SegmentLayer } from '../components/map/SegmentLayer.js'
 import Navbar from '../components/navigation/Navbar.js'
+import { ReportModal } from '../components/reporting/ReportModal.js'
+import { RouteComparisonPanel } from '../components/routing/RouteComparisonPanel.js'
+import { RouteSearchBar } from '../components/routing/RouteSearchBar.js'
+import { type RouteResult, api } from '../services/api.js'
+import { type ActiveLayer, useMapStore } from '../store/mapStore.js'
+import { useSessionStore } from '../store/sessionStore.js'
 
 // Fix default marker icon broken by Vite
 import L from 'leaflet'
@@ -184,12 +184,18 @@ export default function MapPage() {
         <div className="flex-1 h-full z-0 relative">
           {/* Floating Pill-style Layer Toggle (Top Right) */}
           <div className="absolute top-4 right-4 z-[1000] flex gap-1 bg-[#111827] rounded-full p-1 border border-[#1f2937] shadow-xl">
-            {['All', 'Lighting', 'Flood', 'Surface', 'Walkability'].map((layer) => {
-              const key = (layer === 'All' ? 'composite' : layer.toLowerCase()) as ActiveLayer
+            {[
+              { label: 'All', key: 'composite' as ActiveLayer },
+              { label: 'School', key: 'school' as ActiveLayer },
+              { label: 'Hospital', key: 'hospital' as ActiveLayer },
+              { label: 'Park', key: 'park' as ActiveLayer },
+              { label: 'Bus Stop', key: 'bus_stop' as ActiveLayer },
+              { label: 'Footpath', key: 'footpath' as ActiveLayer },
+            ].map(({ label, key }) => {
               const isActive = activeLayer === key
               return (
                 <button
-                  key={layer}
+                  key={key}
                   type="button"
                   onClick={() => setActiveLayer(key)}
                   className={`px-3.5 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer
@@ -199,7 +205,7 @@ export default function MapPage() {
                         : 'text-gray-400 hover:text-white hover:bg-gray-800'
                     }`}
                 >
-                  {t(`map.layers.${key === 'composite' ? 'all' : key}`)}
+                  {label}
                 </button>
               )
             })}
@@ -207,8 +213,8 @@ export default function MapPage() {
 
           {/* Map */}
           <MapContainer
-            center={[17.385, 78.486]}
-            zoom={13}
+            center={[17.4483, 78.3741]}
+            zoom={14}
             zoomControl={false}
             style={{ height: '100%', width: '100%' }}
             className="w-full h-full"

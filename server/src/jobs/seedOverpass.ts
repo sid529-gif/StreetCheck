@@ -8,10 +8,10 @@
  * Target: ≥ 5,000 segments for the Hyderabad demo bbox
  */
 
+import { PrismaClient } from '@prisma/client'
+import { SCORING_VERSION, computeSafetyScore, getSafetyBand } from '@streetcheck/shared'
 import axios from 'axios'
 import dotenv from 'dotenv'
-import { PrismaClient } from '@prisma/client'
-import { computeSafetyScore, getSafetyBand, SCORING_VERSION } from '@streetcheck/shared'
 import { computeBbox } from '../db/geoQueries.js'
 
 dotenv.config()
@@ -30,42 +30,6 @@ const BBOX = FULL_CITY ? BBOX_FULL : BBOX_DEMO
 
 const BATCH_SIZE = 200 // DB upsert batch size
 
-// ── OSM tag → score heuristics ────────────────────────────────────────────────
-
-function lightingFromOsm(lit: string | undefined): number {
-  const map: Record<string, number> = {
-    yes: 0.9,
-    '24/7': 1.0,
-    automatic: 0.85,
-    no: 0.1,
-    disused: 0.1,
-  }
-  return map[lit ?? ''] ?? 0.5
-}
-
-function surfaceFromOsm(surface: string | undefined): number {
-  const map: Record<string, number> = {
-    asphalt: 0.9,
-    paved: 0.85,
-    concrete: 0.85,
-    'concrete:plates': 0.8,
-    'concrete:lanes': 0.8,
-    paving_stones: 0.75,
-    cobblestone: 0.6,
-    sett: 0.6,
-    compacted: 0.55,
-    gravel: 0.4,
-    fine_gravel: 0.45,
-    unpaved: 0.3,
-    dirt: 0.2,
-    mud: 0.1,
-    sand: 0.2,
-    ground: 0.35,
-    grass: 0.3,
-  }
-  return map[surface ?? ''] ?? 0.6
-}
-
 function walkabilityFromOsm(footway: string | undefined, sidewalk: string | undefined): number {
   const hasSidewalk = sidewalk && ['yes', 'both', 'left', 'right'].includes(sidewalk)
   const hasFootway = footway === 'yes'
@@ -73,26 +37,6 @@ function walkabilityFromOsm(footway: string | undefined, sidewalk: string | unde
   if (hasSidewalk || hasFootway) return 0.9
   if (noWalk) return 0.2
   return 0.5
-}
-
-// Highway type affects accident rate heuristic
-function accidentRateFromHighway(highway: string | undefined): number {
-  const map: Record<string, number> = {
-    motorway: 0.3,
-    trunk: 0.25,
-    primary: 0.2,
-    secondary: 0.15,
-    tertiary: 0.12,
-    unclassified: 0.1,
-    residential: 0.08,
-    service: 0.06,
-    living_street: 0.04,
-    pedestrian: 0.03,
-    footway: 0.02,
-    cycleway: 0.05,
-    path: 0.06,
-  }
-  return map[highway ?? ''] ?? 0.1
 }
 
 // ── Overpass API types ────────────────────────────────────────────────────────
@@ -214,11 +158,11 @@ async function seed(): Promise<void> {
     name: string | null
     geometry: object
     bbox: object
-    lightingScore: number
-    accidentRate: number
-    floodRisk: number
-    surfaceQuality: number
-    walkabilityScore: number
+    school: number
+    hospital: number
+    park: number
+    bus_stop: number
+    footpath: number
     safetyScore: number
     safetyBand: string
     scoringVersion: number
@@ -242,18 +186,18 @@ async function seed(): Promise<void> {
     // Skip ways with fewer than 2 resolved nodes
     if (coords.length < 2) continue
 
-    const lightingScore = lightingFromOsm(tags.lit)
-    const surfaceQuality = surfaceFromOsm(tags.surface)
-    const walkabilityScore = walkabilityFromOsm(tags.footway, tags.sidewalk)
-    const accidentRate = accidentRateFromHighway(tags.highway)
-    const floodRisk = 0.1 // default; will be updated by HYDRAA data in Phase 2
+    const footpath = Math.round(walkabilityFromOsm(tags.footway, tags.sidewalk) * 100)
+    const school = 50
+    const hospital = 50
+    const park = 50
+    const bus_stop = 50
 
     const safetyScore = computeSafetyScore({
-      lightingScore,
-      floodRisk,
-      surfaceQuality,
-      walkabilityScore,
-      activeReports: 0,
+      school,
+      hospital,
+      park,
+      bus_stop,
+      footpath,
     })
     const safetyBand = getSafetyBand(safetyScore)
     const bbox = computeBbox(coords)
@@ -263,11 +207,11 @@ async function seed(): Promise<void> {
       name: tags.name ?? null,
       geometry: { type: 'LineString', coordinates: coords },
       bbox,
-      lightingScore,
-      accidentRate,
-      floodRisk,
-      surfaceQuality,
-      walkabilityScore,
+      school,
+      hospital,
+      park,
+      bus_stop,
+      footpath,
       safetyScore,
       safetyBand,
       scoringVersion: SCORING_VERSION,
@@ -300,9 +244,11 @@ async function seed(): Promise<void> {
             osmHighway: record.osmHighway,
             osmFootway: record.osmFootway,
             osmSidewalk: record.osmSidewalk,
-            lightingScore: record.lightingScore,
-            surfaceQuality: record.surfaceQuality,
-            walkabilityScore: record.walkabilityScore,
+            school: record.school,
+            hospital: record.hospital,
+            park: record.park,
+            bus_stop: record.bus_stop,
+            footpath: record.footpath,
             safetyScore: record.safetyScore,
             safetyBand: record.safetyBand,
             scoringVersion: record.scoringVersion,

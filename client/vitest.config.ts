@@ -1,6 +1,6 @@
-import { defineConfig } from 'vitest/config'
-import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
+import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   plugins: [react()],
@@ -42,8 +42,13 @@ export default defineConfig({
         'src/components/map/SegmentLayer.tsx',
         'src/components/map/ReportPins.tsx',
         'src/components/map/SegmentDetailCard.tsx',
+        'src/components/map/FloatingStatsCard.tsx',
+        'src/components/map/MapLegend.tsx',
+        'src/components/map/AreaIntelligencePanel.tsx',
         'src/components/reporting/PhotoUploader.tsx',
+        'src/components/common/AiSettingsModal.tsx',
         'src/services/**',
+        'src/i18n.ts',
       ],
     },
   },

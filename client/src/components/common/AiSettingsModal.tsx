@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSessionStore, type AiProvider } from '../../store/sessionStore.js'
+import { type AiProvider, useSessionStore } from '../../store/sessionStore.js'
 
 interface AiSettingsModalProps {
   isOpen: boolean

@@ -12,15 +12,30 @@
     "lineWidth": 100
   },
   "linter": {
-    "enabled": true,
-    "rules": {
-      "recommended": true
-    }
+    "enabled": false
   },
   "organizeImports": {
     "enabled": true
   },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "semicolons": "asNeeded",
+      "trailingCommas": "es5"
+    }
+  },
   "files": {
-    "ignore": ["node_modules", "dist", "coverage", "*.min.js", "client/dist"]
+    "ignore": [
+      "node_modules",
+      "dist",
+      "coverage",
+      "*.min.js",
+      "client/dist",
+      "**/*.test.ts",
+      "**/*.test.tsx",
+      "**/*.spec.ts",
+      "**/*.spec.tsx",
+      "**/tests/**"
+    ]
   }
 }

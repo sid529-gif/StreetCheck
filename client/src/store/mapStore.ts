@@ -1,5 +1,5 @@
-import { create } from 'zustand'
 import type { HazardType } from '@streetcheck/shared'
+import { create } from 'zustand'
 
 export interface Viewport {
   minLng: number
@@ -13,7 +13,7 @@ export interface MapFilters {
   hazardTypes: HazardType[]
 }
 
-export type ActiveLayer = 'composite' | 'lighting' | 'flood' | 'surface' | 'walkability'
+export type ActiveLayer = 'composite' | 'school' | 'hospital' | 'park' | 'bus_stop' | 'footpath'
 
 interface MapState {
   viewport: Viewport | null

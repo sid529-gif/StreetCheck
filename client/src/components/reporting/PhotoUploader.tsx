@@ -1,6 +1,6 @@
-import { useState, useRef } from 'react'
-import { useTranslation } from 'react-i18next'
 import axios from 'axios'
+import { useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 interface PhotoUploaderProps {
   onUploadSuccess: (url: string) => void

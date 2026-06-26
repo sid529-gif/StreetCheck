@@ -1,5 +1,5 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import Navbar from '../components/navigation/Navbar.js'
 import { api } from '../services/api.js'
 import type { Review } from '../services/api.js'
@@ -100,7 +100,7 @@ export default function ReviewsPage() {
             Help us improve Hyderabad&apos;s street safety platform. Your reviews directly
             contribute to municipal awareness and safety mapping.
           </p>
-          <div className="pt-2">
+          <div className="pt-2 flex justify-center gap-4">
             <button
               onClick={() => setModalOpen(true)}
               className="px-6 py-3 bg-[#f59e0b] hover:bg-[#d97706] text-[#0a0f1a] font-extrabold rounded-xl text-xs uppercase tracking-wider transition-all duration-200 shadow-lg cursor-pointer"
@@ -108,6 +108,16 @@ export default function ReviewsPage() {
             >
               Leave Feedback
             </button>
+            {import.meta.env.VITE_GOOGLE_FORM_RESPONSES_URL && (
+              <a
+                href={import.meta.env.VITE_GOOGLE_FORM_RESPONSES_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-6 py-3 bg-[#111827] hover:bg-gray-800 border border-[#1f2937] text-gray-300 hover:text-white font-extrabold rounded-xl text-xs uppercase tracking-wider transition-all duration-200 flex items-center gap-2 shadow-lg"
+              >
+                📊 View Responses
+              </a>
+            )}
           </div>
         </section>
 

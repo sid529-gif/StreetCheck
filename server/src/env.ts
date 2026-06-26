@@ -1,7 +1,18 @@
-import { z } from 'zod'
 import dotenv from 'dotenv'
+import { existsSync } from 'fs'
+import { dirname, join } from 'path'
+import { fileURLToPath } from 'url'
+import { z } from 'zod'
 
-dotenv.config()
+// Load .env from the monorepo root (two levels up from server/src/)
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+const rootEnv = join(__dirname, '..', '..', '.env')
+if (existsSync(rootEnv)) {
+  dotenv.config({ path: rootEnv })
+} else {
+  dotenv.config()
+}
 
 const EnvSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),

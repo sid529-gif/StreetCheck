@@ -231,11 +231,11 @@
       "successTitle": "Upload Success"
     },
     "dimensions": {
-      "lighting": "Lighting",
-      "accidents": "Accidents",
-      "flood": "Flood Risk",
-      "surface": "Surface",
-      "walkability": "Walkability"
+      "school": "School Proximity",
+      "hospital": "Hospital Proximity",
+      "park": "Park Proximity",
+      "bus_stop": "Bus Stop Proximity",
+      "footpath": "Footpath Presence"
     },
     "bands": {
       "green": "Safe",

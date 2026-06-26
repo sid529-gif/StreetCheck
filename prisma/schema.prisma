@@ -17,12 +17,12 @@ model RoadSegment {
   geometry         Json     // GeoJSON LineString { type, coordinates }
   bbox             Json     // { minLng, minLat, maxLng, maxLat }
 
-  // Score dimensions — all normalised to [0.0, 1.0]
-  lightingScore    Float    @default(0.5)   @map("lighting_score")
-  accidentRate     Float    @default(0.1)   @map("accident_rate")
-  floodRisk        Float    @default(0.1)   @map("flood_risk")
-  surfaceQuality   Float    @default(0.7)   @map("surface_quality")
-  walkabilityScore Float    @default(0.5)   @map("walkability_score")
+  // Score dimensions — all integer percentages [0, 100]
+  school           Int      @default(50)    @map("school")
+  hospital         Int      @default(50)    @map("hospital")
+  park             Int      @default(50)    @map("park")
+  bus_stop         Int      @default(50)    @map("bus_stop")
+  footpath         Int      @default(50)    @map("footpath")
 
   // Computed — updated by scoringEngine after each refresh or report
   safetyScore      Float    @default(0.0)   @map("safety_score")

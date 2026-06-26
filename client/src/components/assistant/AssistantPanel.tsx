@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useMapStore } from '../../store/mapStore.js'
 import { api } from '../../services/api.js'
+import { useMapStore } from '../../store/mapStore.js'
 
 interface Message {
   id: string

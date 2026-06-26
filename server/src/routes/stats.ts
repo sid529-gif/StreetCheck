@@ -1,6 +1,6 @@
 import { Router } from 'express'
-import { prisma } from '../db/prisma.js'
 import { getSegmentCount } from '../db/geoQueries.js'
+import { prisma } from '../db/prisma.js'
 
 const router = Router()
 

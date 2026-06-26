@@ -1,10 +1,10 @@
 import js from '@eslint/js'
-import globals from 'globals'
-import tsParser from '@typescript-eslint/parser'
 import tsPlugin from '@typescript-eslint/eslint-plugin'
+import tsParser from '@typescript-eslint/parser'
+import eslintConfigPrettier from 'eslint-config-prettier'
 import reactPlugin from 'eslint-plugin-react'
 import reactHooks from 'eslint-plugin-react-hooks'
-import eslintConfigPrettier from 'eslint-config-prettier'
+import globals from 'globals'
 
 /** @type {import('eslint').Linter.FlatConfig[]} */
 export default [

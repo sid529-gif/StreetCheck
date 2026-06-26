@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { useMapStore, type ActiveLayer } from '../../store/mapStore.js'
+import { type ActiveLayer, useMapStore } from '../../store/mapStore.js'
 
 export function MapLegend() {
   const { t } = useTranslation()
@@ -7,145 +7,61 @@ export function MapLegend() {
 
   // Define the legend configurations for each active layer type
   const getLegendData = (layer: ActiveLayer) => {
+    const proximityItems = [
+      {
+        color: '#ef4444',
+        label: '0–45%',
+        desc: 'Low Proximity / Absent',
+      },
+      {
+        color: '#eab308',
+        label: '46–75%',
+        desc: 'Moderate Proximity',
+      },
+      {
+        color: '#22c55e',
+        label: '76–100%',
+        desc: 'High Proximity / Present',
+      },
+    ]
+
     switch (layer) {
       case 'composite':
         return {
           title: t('map.layers.all', { defaultValue: 'Overall Safety' }),
           items: [
             {
-              color: '#991b1b',
-              label: '0-20%',
-              desc: t('map.legend.veryUnsafe', { defaultValue: 'Critical' }),
-            },
-            {
               color: '#ef4444',
-              label: '21-40%',
-              desc: t('map.legend.unsafe', { defaultValue: 'Unsafe' }),
+              label: '0–45%',
+              desc: t('map.legend.unsafe', { defaultValue: 'Avoid' }),
             },
             {
-              color: '#f97316',
-              label: '41-60%',
+              color: '#eab308',
+              label: '46–75%',
               desc: t('map.legend.caution', { defaultValue: 'Caution' }),
             },
             {
-              color: '#eab308',
-              label: '61-75%',
-              desc: t('map.legend.fair', { defaultValue: 'Fair' }),
-            },
-            {
-              color: '#4ade80',
-              label: '76-90%',
+              color: '#22c55e',
+              label: '76–100%',
               desc: t('map.legend.safe', { defaultValue: 'Safe' }),
             },
-            {
-              color: '#15803d',
-              label: '91-100%',
-              desc: t('map.legend.verySafe', { defaultValue: 'Very Safe' }),
-            },
           ],
         }
-      case 'lighting':
+      case 'school':
+        return { title: 'School Proximity', items: proximityItems }
+      case 'hospital':
+        return { title: 'Hospital Proximity', items: proximityItems }
+      case 'park':
+        return { title: 'Park Proximity', items: proximityItems }
+      case 'bus_stop':
+        return { title: 'Bus Stop Proximity', items: proximityItems }
+      case 'footpath':
         return {
-          title: t('map.layers.lighting', { defaultValue: 'Lighting Quality' }),
+          title: 'Footpath Presence',
           items: [
-            {
-              color: '#ef4444',
-              label: '0-40%',
-              desc: t('map.legend.dark', { defaultValue: 'Dark Zones' }),
-            },
-            {
-              color: '#eab308',
-              label: '41-75%',
-              desc: t('map.legend.partial', { defaultValue: 'Dimly Lit' }),
-            },
-            {
-              color: '#22c55e',
-              label: '76-100%',
-              desc: t('map.legend.wellLit', { defaultValue: 'Well Lit' }),
-            },
-          ],
-        }
-      case 'flood':
-        return {
-          title: t('map.layers.flood', { defaultValue: 'Historical Flood Risk' }),
-          items: [
-            {
-              color: '#22c55e',
-              label: '0-20%',
-              desc: t('map.legend.lowRisk', { defaultValue: 'Low Risk' }),
-            },
-            {
-              color: '#eab308',
-              label: '21-50%',
-              desc: t('map.legend.medRisk', { defaultValue: 'Moderate Risk' }),
-            },
-            {
-              color: '#ef4444',
-              label: '51-80%',
-              desc: t('map.legend.highRisk', { defaultValue: 'High Risk' }),
-            },
-            {
-              color: '#991b1b',
-              label: '81-100%',
-              desc: t('map.legend.extremeRisk', { defaultValue: 'Severe Risk' }),
-            },
-          ],
-        }
-      case 'surface':
-        return {
-          title: t('map.layers.surface', { defaultValue: 'Road Surface Quality' }),
-          items: [
-            {
-              color: '#ef4444',
-              label: '0-25%',
-              desc: t('map.legend.damaged', { defaultValue: 'Damaged / Potholes' }),
-            },
-            {
-              color: '#f97316',
-              label: '26-50%',
-              desc: t('map.legend.poorSurface', { defaultValue: 'Poor / Uneven' }),
-            },
-            {
-              color: '#eab308',
-              label: '51-75%',
-              desc: t('map.legend.fairSurface', { defaultValue: 'Fair / Satisfactory' }),
-            },
-            {
-              color: '#22c55e',
-              label: '76-100%',
-              desc: t('map.legend.smooth', { defaultValue: 'Smooth Asphalt' }),
-            },
-          ],
-        }
-      case 'walkability':
-        return {
-          title: t('map.layers.walkability', { defaultValue: 'Pedestrian Walkability' }),
-          items: [
-            {
-              color: '#ef4444',
-              label: '0-25%',
-              desc: t('map.legend.noFootpath', { defaultValue: 'No Sidewalk' }),
-            },
-            {
-              color: '#f97316',
-              label: '26-50%',
-              desc: t('map.legend.poorWalk', { defaultValue: 'Obstructions / Narrow' }),
-            },
-            {
-              color: '#eab308',
-              label: '51-75%',
-              desc: t('map.legend.avgWalk', { defaultValue: 'Average Sidewalk' }),
-            },
-            {
-              color: '#22c55e',
-              label: '76-90%',
-              desc: t('map.legend.goodWalk', { defaultValue: 'Good / Clear' }),
-            },
-            {
-              color: '#15803d',
-              label: '91-100%',
-              desc: t('map.legend.excellentWalk', { defaultValue: 'Premium Footpath' }),
-            },
+            { color: '#ef4444', label: '0–45%', desc: 'No Footpath' },
+            { color: '#eab308', label: '46–75%', desc: 'Partial Footpath' },
+            { color: '#22c55e', label: '76–100%', desc: 'Full Footpath' },
           ],
         }
       default:

@@ -1,19 +1,19 @@
-import axios from 'axios'
-import type { FeatureCollection } from 'geojson'
-import { useSessionStore } from '../store/sessionStore.js'
 import {
-  SubmitReportSchema,
   ReportResponseSchema,
   RouteRequestSchema,
   RouteResponseSchema,
+  SubmitReportSchema,
 } from '@streetcheck/shared'
 import type {
   HazardType,
-  SafetyBand,
   ReportResponse,
   RouteRequest,
   RouteResponse as RouteResult,
+  SafetyBand,
 } from '@streetcheck/shared'
+import axios from 'axios'
+import type { FeatureCollection } from 'geojson'
+import { useSessionStore } from '../store/sessionStore.js'
 
 const client = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || '',
@@ -72,11 +72,13 @@ export interface SegmentDetail {
     maxLng: number
     maxLat: number
   }
-  lightingScore: number
-  accidentRate: number
-  floodRisk: number
-  surfaceQuality: number
-  walkabilityScore: number
+  // ── Five OSM proximity / infrastructure indicators (each 0–100) ───────────
+  school: number
+  hospital: number
+  park: number
+  bus_stop: number
+  footpath: number
+  // ── Composite score (0–100) ───────────────────────────────────────────────
   safetyScore: number
   safetyBand: SafetyBand
   scoringVersion: number

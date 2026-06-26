@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { useTranslation, Trans } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import type { RouteResult } from '../../services/api.js'
 import { api } from '../../services/api.js'
 

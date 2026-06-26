@@ -1,6 +1,6 @@
+import axios from 'axios'
 import { Router } from 'express'
 import { prisma } from '../db/prisma.js'
-import axios from 'axios'
 
 const router = Router()
 

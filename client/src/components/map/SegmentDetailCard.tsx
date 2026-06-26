@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { useMapStore } from '../../store/mapStore.js'
 import { api } from '../../services/api.js'
+import { useMapStore } from '../../store/mapStore.js'
 import { ScoreDisplay } from '../common/ScoreDisplay.js'
 
 interface SegmentDetailCardProps {
@@ -101,24 +101,24 @@ export function SegmentDetailCard({ onOpenReport }: SegmentDetailCardProps) {
               <div className="space-y-3">
                 {[
                   {
-                    label: t('map.dimensions.lighting'),
-                    score: segment.lightingScore,
+                    label: t('map.dimensions.school'),
+                    score: (segment.school ?? segment.safetyScore) / 100,
                   },
                   {
-                    label: t('map.dimensions.accidents'),
-                    score: 1 - segment.accidentRate,
+                    label: t('map.dimensions.hospital'),
+                    score: (segment.hospital ?? segment.safetyScore) / 100,
                   },
                   {
-                    label: t('map.dimensions.flood'),
-                    score: 1 - segment.floodRisk,
+                    label: t('map.dimensions.park'),
+                    score: (segment.park ?? segment.safetyScore) / 100,
                   },
                   {
-                    label: t('map.dimensions.surface'),
-                    score: segment.surfaceQuality,
+                    label: t('map.dimensions.bus_stop'),
+                    score: (segment.bus_stop ?? segment.safetyScore) / 100,
                   },
                   {
-                    label: t('map.dimensions.walkability'),
-                    score: segment.walkabilityScore,
+                    label: t('map.dimensions.footpath'),
+                    score: (segment.footpath ?? segment.safetyScore) / 100,
                   },
                 ].map((dim, i) => (
                   <div key={i} className="flex items-center gap-3">

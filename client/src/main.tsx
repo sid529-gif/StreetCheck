@@ -1,7 +1,7 @@
 import './i18n.js'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import App from './App.tsx'
 import 'leaflet/dist/leaflet.css'
 import './index.css'

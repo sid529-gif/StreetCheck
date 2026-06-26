@@ -1,7 +1,7 @@
-import { HashRouter, Routes, Route } from 'react-router-dom'
+import { HashRouter, Route, Routes } from 'react-router-dom'
+import AboutPage from './pages/AboutPage.js'
 import LandingPage from './pages/LandingPage.js'
 import MapPage from './pages/MapPage.js'
-import AboutPage from './pages/AboutPage.js'
 import ReviewsPage from './pages/ReviewsPage.js'
 
 export default function App() {

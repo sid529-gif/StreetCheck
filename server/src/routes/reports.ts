@@ -1,15 +1,15 @@
+import { HazardTypeEnum } from '@streetcheck/shared'
+import axios from 'axios'
 import { Router } from 'express'
 import type { Request, Response } from 'express'
 import { z } from 'zod'
-import axios from 'axios'
-import { prisma } from '../db/prisma.js'
 import { getNearestSegment } from '../db/geoQueries.js'
-import { recalculateSegmentScore } from '../services/scoringEngine.js'
-import { validate, validateQuery } from '../middleware/validate.js'
+import { prisma } from '../db/prisma.js'
 import { env } from '../env.js'
-import { HazardTypeEnum } from '@streetcheck/shared'
-import { getAiConfig } from './ai.js'
+import { validate, validateQuery } from '../middleware/validate.js'
 import { classifyReport, detectHazard } from '../services/aiClient.js'
+import { recalculateSegmentScore } from '../services/scoringEngine.js'
+import { getAiConfig } from './ai.js'
 
 const router = Router()
 

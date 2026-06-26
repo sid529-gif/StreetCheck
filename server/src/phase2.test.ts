@@ -15,92 +15,89 @@ import { z } from 'zod'
 // ── computeSafetyScore ────────────────────────────────────────────────────────
 
 describe('computeSafetyScore', () => {
-  it('returns 1.0 for a perfect segment', () => {
+  it('returns 100 for a perfect segment', () => {
     const score = computeSafetyScore({
-      lightingScore: 1,
-      floodRisk: 0,
-      surfaceQuality: 1,
-      walkabilityScore: 1,
-      activeReports: 0,
+      school: 100,
+      hospital: 100,
+      park: 100,
+      bus_stop: 100,
+      footpath: 100,
     })
-    expect(score).toBe(1.0)
+    expect(score).toBe(100)
   })
 
-  it('returns 0.0 for the worst-case segment', () => {
+  it('returns 0 for the worst-case segment', () => {
     const score = computeSafetyScore({
-      lightingScore: 0,
-      floodRisk: 1,
-      surfaceQuality: 0,
-      walkabilityScore: 0,
-      activeReports: 5,
+      school: 0,
+      hospital: 0,
+      park: 0,
+      bus_stop: 0,
+      footpath: 0,
     })
-    expect(score).toBe(0.0)
+    expect(score).toBe(0)
   })
 
   it('matches the locked formula for a known input', () => {
-    // lighting=0.8, floodRisk=0.1 (floodScore=0.9), surface=0.7, walkability=0.6, activeReports=1 (community=0.8)
-    // = 0.30*0.8 + 0.25*0.9 + 0.20*0.7 + 0.15*0.6 + 0.10*0.8
-    // = 0.24 + 0.225 + 0.14 + 0.09 + 0.08 = 0.775
+    // school=80, hospital=80, park=80, bus_stop=80, footpath=80
+    // = 0.25*80 + 0.25*80 + 0.20*80 + 0.15*80 + 0.15*80
+    // = 20 + 20 + 16 + 12 + 12 = 80
     const score = computeSafetyScore({
-      lightingScore: 0.8,
-      floodRisk: 0.1,
-      surfaceQuality: 0.7,
-      walkabilityScore: 0.6,
-      activeReports: 1,
+      school: 80,
+      hospital: 80,
+      park: 80,
+      bus_stop: 80,
+      footpath: 80,
     })
-    expect(score).toBeCloseTo(0.775, 4)
+    expect(score).toBeCloseTo(80, 0)
   })
 
-  it('uses the WEIGHTS constants from shared package', () => {
-    // Verify weights sum to 1.0
+  it('uses the WEIGHTS constants from shared package — sum equals 1.0', () => {
     const sum =
-      WEIGHTS.lighting + WEIGHTS.flood + WEIGHTS.surface + WEIGHTS.walkability + WEIGHTS.community
+      WEIGHTS.school + WEIGHTS.hospital + WEIGHTS.park + WEIGHTS.bus_stop + WEIGHTS.footpath
     expect(sum).toBeCloseTo(1.0, 10)
   })
 
-  it('clamps correctly even with boundary inputs', () => {
-    // Mid-range inputs
+  it('produces mid-range score for uniform 50% inputs', () => {
     const score = computeSafetyScore({
-      lightingScore: 0.5,
-      floodRisk: 0.5,
-      surfaceQuality: 0.5,
-      walkabilityScore: 0.5,
-      activeReports: 2.5, // community = 1 - 2.5 * 0.2 = 0.5
+      school: 50,
+      hospital: 50,
+      park: 50,
+      bus_stop: 50,
+      footpath: 50,
     })
-    // = 0.30*0.5 + 0.25*0.5 + 0.20*0.5 + 0.15*0.5 + 0.10*0.5 = 0.5
-    expect(score).toBeCloseTo(0.5, 4)
+    expect(score).toBeCloseTo(50, 0)
   })
 })
 
 // ── getSafetyBand ─────────────────────────────────────────────────────────────
 
 describe('getSafetyBand', () => {
-  it('returns "green" at exactly 0.75', () => {
-    expect(getSafetyBand(0.75)).toBe('green')
+  it('returns "amber" at exactly 75 (boundary exclusive)', () => {
+    expect(getSafetyBand(75)).toBe('amber')
   })
 
-  it('returns "green" above 0.75', () => {
-    expect(getSafetyBand(0.9)).toBe('green')
-    expect(getSafetyBand(1.0)).toBe('green')
+  it('returns "green" above 75', () => {
+    expect(getSafetyBand(80)).toBe('green')
+    expect(getSafetyBand(100)).toBe('green')
   })
 
-  it('returns "amber" just below 0.75', () => {
-    expect(getSafetyBand(0.749)).toBe('amber')
+  it('returns "amber" just below 76', () => {
+    expect(getSafetyBand(75.9)).toBe('amber')
   })
 
-  it('returns "amber" at exactly 0.45', () => {
-    expect(getSafetyBand(0.45)).toBe('amber')
+  it('returns "red" at exactly 45 (boundary exclusive)', () => {
+    expect(getSafetyBand(45)).toBe('red')
   })
 
-  it('returns "amber" between 0.45 and 0.75', () => {
-    expect(getSafetyBand(0.6)).toBe('amber')
+  it('returns "amber" between 46 and 75', () => {
+    expect(getSafetyBand(60)).toBe('amber')
   })
 
-  it('returns "red" just below 0.45', () => {
-    expect(getSafetyBand(0.449)).toBe('red')
+  it('returns "red" just below 46', () => {
+    expect(getSafetyBand(44)).toBe('red')
   })
 
-  it('returns "red" at 0.0', () => {
+  it('returns "red" at 0', () => {
     expect(getSafetyBand(0)).toBe('red')
   })
 })

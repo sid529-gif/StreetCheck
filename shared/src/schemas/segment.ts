@@ -16,19 +16,23 @@ export type HazardType = z.infer<typeof HazardTypeEnum>
 export const SafetyBandEnum = z.enum(['green', 'amber', 'red'])
 export type SafetyBand = z.infer<typeof SafetyBandEnum>
 
-// ── Road Segment ─────────────────────────────────────────────────────────────
+// ── Road Segment — OSM Madhapur/Hitech City scope ────────────────────────────
+// safetyScore is an integer 0–100 derived from OSM proximity indicators.
+// safetyBand: green > 75 | amber > 45 | red ≤ 45
 export const RoadSegmentSchema = z.object({
   segmentId: z.string(),
   osmWayId: z.number().int().nullable().optional(),
   name: z.string().nullable().optional(),
-  lightingScore: z.number().min(0).max(1),
-  accidentRate: z.number().min(0).max(1),
-  floodRisk: z.number().min(0).max(1),
-  surfaceQuality: z.number().min(0).max(1),
-  walkabilityScore: z.number().min(0).max(1),
-  safetyScore: z.number().min(0).max(1),
+  // ── Five OSM proximity / infrastructure indicators (each 0–100) ───────────
+  school: z.number().min(0).max(100),
+  hospital: z.number().min(0).max(100),
+  park: z.number().min(0).max(100),
+  bus_stop: z.number().min(0).max(100),
+  footpath: z.number().min(0).max(100),
+  // ── Composite ─────────────────────────────────────────────────────────────
+  safetyScore: z.number().min(0).max(100),
   safetyBand: SafetyBandEnum,
-  scoringVersion: z.number().int().default(1),
+  scoringVersion: z.number().int().default(3),
   activeReportCount: z.number().int().min(0).default(0),
   lastUpdated: z.string().datetime(),
   dataSources: z.array(z.string()),

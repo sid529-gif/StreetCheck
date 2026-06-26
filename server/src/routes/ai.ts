@@ -1,24 +1,24 @@
+import {
+  AssistantRequestSchema,
+  ClassifyTextSchema,
+  DetectPhotoSchema,
+  ExplanationRequestSchema,
+  SummaryRequestSchema,
+  getSafetyBand,
+} from '@streetcheck/shared'
 import { Router } from 'express'
-import type { Request, Response, NextFunction } from 'express'
+import type { NextFunction, Request, Response } from 'express'
 import rateLimit from 'express-rate-limit'
 import { prisma } from '../db/prisma.js'
 import { validate } from '../middleware/validate.js'
 import {
-  SummaryRequestSchema,
-  ExplanationRequestSchema,
-  AssistantRequestSchema,
-  DetectPhotoSchema,
-  ClassifyTextSchema,
-  getSafetyBand,
-} from '@streetcheck/shared'
-import {
-  getSegmentSummary,
-  getRouteExplanation,
-  getAssistantResponse,
-  detectHazard,
   classifyReport,
+  detectHazard,
+  getAssistantResponse,
+  getRouteExplanation,
+  getSegmentSummary,
 } from '../services/aiClient.js'
-import type { SegmentDetail, SegmentContext, AiConfig } from '../services/aiClient.js'
+import type { AiConfig, SegmentContext, SegmentDetail } from '../services/aiClient.js'
 import type { RouteOption } from '../services/routingService.js'
 
 const router = Router()
@@ -193,11 +193,11 @@ router.post(
         name: segment.name,
         geometry: segment.geometry as any,
         bbox: segment.bbox as any,
-        lightingScore: segment.lightingScore,
-        accidentRate: segment.accidentRate,
-        floodRisk: segment.floodRisk,
-        surfaceQuality: segment.surfaceQuality,
-        walkabilityScore: segment.walkabilityScore,
+        school: segment.school,
+        hospital: segment.hospital,
+        park: segment.park,
+        bus_stop: segment.bus_stop,
+        footpath: segment.footpath,
         safetyScore: segment.safetyScore,
         safetyBand: segment.safetyBand as 'green' | 'amber' | 'red',
         scoringVersion: segment.scoringVersion,
@@ -297,11 +297,11 @@ router.post(
           name: seg.name,
           safetyScore: seg.safetyScore,
           safetyBand: seg.safetyBand,
-          lightingScore: seg.lightingScore,
-          accidentRate: seg.accidentRate,
-          floodRisk: seg.floodRisk,
-          surfaceQuality: seg.surfaceQuality,
-          walkabilityScore: seg.walkabilityScore,
+          school: seg.school,
+          hospital: seg.hospital,
+          park: seg.park,
+          bus_stop: seg.bus_stop,
+          footpath: seg.footpath,
           activeReports: seg.activeReports,
         }))
       }

@@ -19,8 +19,8 @@
 import { MultiDirectedGraph } from 'graphology'
 import shortestPath from 'graphology-shortest-path'
 const { dijkstra } = shortestPath
-import { prisma } from '../db/prisma.js'
 import { getSafetyBand } from '@streetcheck/shared'
+import { prisma } from '../db/prisma.js'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

@@ -1,5 +1,5 @@
+import { SCORING_VERSION, computeSafetyScore, getSafetyBand } from '@streetcheck/shared'
 import { prisma } from '../db/prisma.js'
-import { computeSafetyScore, getSafetyBand, SCORING_VERSION } from '@streetcheck/shared'
 
 // ── Score recalculation ───────────────────────────────────────────────────────
 
@@ -14,20 +14,20 @@ export async function recalculateSegmentScore(segmentId: string): Promise<void> 
   const segment = await prisma.roadSegment.findUniqueOrThrow({
     where: { id: segmentId },
     select: {
-      lightingScore: true,
-      floodRisk: true,
-      surfaceQuality: true,
-      walkabilityScore: true,
-      activeReports: true,
+      school: true,
+      hospital: true,
+      park: true,
+      bus_stop: true,
+      footpath: true,
     },
   })
 
   const safetyScore = computeSafetyScore({
-    lightingScore: segment.lightingScore,
-    floodRisk: segment.floodRisk,
-    surfaceQuality: segment.surfaceQuality,
-    walkabilityScore: segment.walkabilityScore,
-    activeReports: segment.activeReports,
+    school: segment.school,
+    hospital: segment.hospital,
+    park: segment.park,
+    bus_stop: segment.bus_stop,
+    footpath: segment.footpath,
   })
 
   const safetyBand = getSafetyBand(safetyScore)
