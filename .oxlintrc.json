@@ -4,11 +4,5 @@
     "no-console": "warn",
     "eqeqeq": "error"
   },
-  "ignorePatterns": [
-    "node_modules/",
-    "dist/",
-    "coverage/",
-    "*.config.js",
-    "*.config.ts"
-  ]
+  "ignorePatterns": ["node_modules/", "dist/", "coverage/", "*.config.js", "*.config.ts"]
 }

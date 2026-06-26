@@ -45,11 +45,5 @@
       "ignoreDependencies": ["@vitest/coverage-v8"]
     }
   },
-  "ignore": [
-    "**/.specify/**",
-    "**/.speckit/**",
-    "**/dist/**",
-    "**/coverage/**",
-    "ai-service/**"
-  ]
+  "ignore": ["**/.specify/**", "**/.speckit/**", "**/dist/**", "**/coverage/**", "ai-service/**"]
 }
