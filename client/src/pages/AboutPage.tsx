@@ -1,9 +1,6 @@
-import { useTranslation } from 'react-i18next'
 import Navbar from '../components/navigation/Navbar.js'
 
 export default function AboutPage() {
-  const { t } = useTranslation()
-
   const formulaWeights = [
     {
       name: 'School Proximity',
@@ -51,7 +48,7 @@ export default function AboutPage() {
             About StreetCheck
           </h1>
           <p className="text-sm text-gray-400 max-w-2xl mx-auto leading-relaxed">
-            StreetCheck is Hyderabad's civic safety intelligence platform. Built on the Swecha
+            StreetCheck is Hyderabad&apos;s civic safety intelligence platform. Built on the Swecha
             OpenStreetMap (OSM) dataset, it evaluates city neighborhoods across 5 core
             infrastructure indicators to help citizens plan safer, smarter routes.
           </p>
