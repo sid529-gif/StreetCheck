@@ -14,3 +14,9 @@ prisma/migrations/
 # Python
 ai-service/__pycache__/
 ai-service/.venv/
+
+# Biome owns formatting for these files — exclude from Prettier to avoid conflicts
+package.json
+.oxlintrc.json
+knip.json
+client/src/index.css
