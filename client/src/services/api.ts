@@ -38,6 +38,25 @@ export interface BboxQuery {
   band?: SafetyBand
 }
 
+export interface AreaDetails {
+  name: string
+  safetyScore: number
+  school: number
+  hospital: number
+  park: number
+  bus_stop: number
+  footpath: number
+  activeReports: number
+  trend: 'improving' | 'deteriorating' | 'stable'
+  reportedDarkSpots: number
+  floodProneCount: number
+  potholeDensity: number
+  sidewalkCoverage: number
+  pedestrianFriendliness: string
+  crossingAvailability: string
+  maintenanceHistory: string
+}
+
 export interface AppStats {
   segmentCount: number
   activeReports: number
@@ -276,6 +295,11 @@ export const api = {
 
   submitReview: async (input: SubmitReviewInput): Promise<Review> => {
     const { data } = await client.post<Review>('/api/reviews', input)
+    return data
+  },
+
+  getAreaDetails: async (name: string): Promise<AreaDetails> => {
+    const { data } = await client.get<AreaDetails>(`/api/areas/${name}`)
     return data
   },
 }

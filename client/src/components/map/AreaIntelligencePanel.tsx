@@ -1,27 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
+import { type AreaDetails, api } from '../../services/api.js'
 import { useMapStore } from '../../store/mapStore.js'
 
 type TabType = 'overview' | 'school' | 'hospital' | 'park' | 'bus_stop' | 'footpath'
-
-interface AreaDetails {
-  name: string
-  safetyScore: number
-  school: number
-  hospital: number
-  park: number
-  bus_stop: number
-  footpath: number
-  activeReports: number
-  trend: 'improving' | 'deteriorating' | 'stable'
-  reportedDarkSpots: number
-  floodProneCount: number
-  potholeDensity: number
-  sidewalkCoverage: number
-  pedestrianFriendliness: string
-  crossingAvailability: string
-  maintenanceHistory: string
-}
 
 export function AreaIntelligencePanel() {
   const selectedAreaName = useMapStore((state) => state.selectedAreaName)
@@ -34,11 +16,9 @@ export function AreaIntelligencePanel() {
     error,
   } = useQuery<AreaDetails>({
     queryKey: ['areaDetails', selectedAreaName],
-    queryFn: async () => {
+    queryFn: () => {
       if (!selectedAreaName) return null as any
-      const res = await fetch(`/api/areas/${selectedAreaName}`)
-      if (!res.ok) throw new Error('Failed to fetch area data')
-      return res.json()
+      return api.getAreaDetails(selectedAreaName)
     },
     enabled: !!selectedAreaName,
   })
