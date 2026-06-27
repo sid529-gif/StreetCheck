@@ -21,6 +21,8 @@ paths = [
   '''.env.example''',
   '''CHANGELOG.md''',
   '''USER_MANUAL.md''',
+  '''client/src/tests/ReportModal.test.tsx''',
+  '''server/src/tests/reports.test.ts''',
 ]
 regexes = [
   '''sk-ant-\.\.\."""''',          # placeholder in docs
