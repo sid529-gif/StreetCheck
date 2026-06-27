@@ -26,6 +26,15 @@ import { type RouteResult, api } from '../services/api.js'
 import { type ActiveLayer, useMapStore } from '../store/mapStore.js'
 import { useSessionStore } from '../store/sessionStore.js'
 
+// ── Hotspot bounding box (from QGIS extent) ────────────────────────────────
+const HOTSPOT_SW = L.latLng(17.4444337, 78.3786482)
+const HOTSPOT_NE = L.latLng(17.4503845, 78.3860746)
+const HOTSPOT_BOUNDS = L.latLngBounds(HOTSPOT_SW, HOTSPOT_NE)
+const HOTSPOT_CENTER: [number, number] = [
+  (17.4444337 + 17.4503845) / 2, // 17.4474091
+  (78.3786482 + 78.3860746) / 2, // 78.3823614
+]
+
 // Fix default marker icon broken by Vite
 import L from 'leaflet'
 // @ts-ignore
@@ -53,26 +62,30 @@ function MapController({
 
   useEffect(() => {
     if (origin && destination) {
-      // Zoom map to fit both points
+      // Zoom map to fit both points, clamped to hotspot bounds
       const bounds = [
         [origin.lat, origin.lng],
         [destination.lat, destination.lng],
       ] as [[number, number], [number, number]]
-      map.fitBounds(bounds, { padding: [50, 50] })
+      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 18 })
     } else if (origin) {
-      map.setView([origin.lat, origin.lng], 14)
+      // Stay within hotspot bounds
+      const clampedLat = Math.min(Math.max(origin.lat, HOTSPOT_SW.lat), HOTSPOT_NE.lat)
+      const clampedLng = Math.min(Math.max(origin.lng, HOTSPOT_SW.lng), HOTSPOT_NE.lng)
+      map.setView([clampedLat, clampedLng], 17)
     }
   }, [origin, destination, map])
 
   return null
 }
 
+// Hotspot locations within the restricted bounding box
 const NEIGHBORHOOD_AREAS = [
-  { key: 'banjarahills', lat: 17.415, lng: 78.434, name: 'Banjara Hills' },
-  { key: 'kondapur', lat: 17.462, lng: 78.356, name: 'Kondapur' },
-  { key: 'madhapur', lat: 17.448, lng: 78.39, name: 'Madhapur' },
-  { key: 'gachibowli', lat: 17.44, lng: 78.348, name: 'Gachibowli' },
-  { key: 'jubileehills', lat: 17.43, lng: 78.41, name: 'Jubilee Hills' },
+  { key: 'hotspot-north', lat: 17.4498, lng: 78.382, name: 'North Sector' },
+  { key: 'hotspot-central', lat: 17.4474, lng: 78.3824, name: 'Central Hotspot' },
+  { key: 'hotspot-south', lat: 17.4452, lng: 78.3828, name: 'South Sector' },
+  { key: 'hotspot-east', lat: 17.4474, lng: 78.385, name: 'East Corridor' },
+  { key: 'hotspot-west', lat: 17.4474, lng: 78.3798, name: 'West Corridor' },
 ]
 
 export default function MapPage() {
@@ -213,9 +226,13 @@ export default function MapPage() {
 
           {/* Map */}
           <MapContainer
-            center={[17.4483, 78.3741]}
-            zoom={14}
+            center={HOTSPOT_CENTER}
+            zoom={17}
+            minZoom={15}
+            maxZoom={19}
             zoomControl={false}
+            maxBounds={HOTSPOT_BOUNDS}
+            maxBoundsViscosity={1.0}
             style={{ height: '100%', width: '100%' }}
             className="w-full h-full"
           >

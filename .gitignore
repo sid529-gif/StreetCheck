@@ -31,3 +31,7 @@ server/dist/
 .vscode/settings.json
 *.swp
 *.swo
+
+# Screenshots / local images
+Screenshot*.png
+Screenshot*.jpg

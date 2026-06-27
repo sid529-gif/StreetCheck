@@ -2,10 +2,12 @@ import { resolve } from 'path'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
-// GitHub Pages hosts at /StreetCheck/ — set base in CI via VITE_BASE_URL
-// Locally it stays as '/'
+// Base path:
+//   GitHub Pages → VITE_BASE_URL=/StreetCheck/   (set in GitHub Actions secret)
+//   GitLab Pages → VITE_BASE_URL=/               (GitLab Pages uses root for project pages)
+//   Local dev    → '/' (default)
 export default defineConfig({
-  base: process.env.VITE_BASE_URL || '/StreetCheck/',
+  base: process.env.VITE_BASE_URL ?? '/',
   plugins: [react()],
   resolve: {
     alias: {
