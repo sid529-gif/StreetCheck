@@ -3,17 +3,66 @@ import { prisma } from '../db/prisma.js'
 
 const router = Router()
 
-const AREAS: Record<string, { lat: number; lng: number; name: string }> = {
-  banjarahills: { lat: 17.415, lng: 78.434, name: 'Banjara Hills' },
-  kondapur: { lat: 17.462, lng: 78.356, name: 'Kondapur' },
-  madhapur: { lat: 17.448, lng: 78.39, name: 'Madhapur' },
-  gachibowli: { lat: 17.44, lng: 78.348, name: 'Gachibowli' },
-  jubileehills: { lat: 17.43, lng: 78.41, name: 'Jubilee Hills' },
+interface AreaDefinition {
+  name: string
+  bounds: [[number, number], [number, number]]
+  // Realistic fallback scores (0-100) based on Sweetcheck OSM layer indicators
+  fallback: {
+    safetyScore: number
+    school: number
+    hospital: number
+    park: number
+    bus_stop: number
+    footpath: number
+  }
+}
+
+const AREAS: Record<string, AreaDefinition> = {
+  hotspotnorth: {
+    name: 'North Sector',
+    bounds: [
+      [17.4484, 78.3786482],
+      [17.4503845, 78.3860746],
+    ],
+    fallback: { safetyScore: 48, school: 40, hospital: 35, park: 55, bus_stop: 60, footpath: 50 },
+  },
+  hotspotcentral: {
+    name: 'Central Hotspot',
+    bounds: [
+      [17.4464, 78.3805],
+      [17.4484, 78.3842],
+    ],
+    fallback: { safetyScore: 78, school: 80, hospital: 75, park: 70, bus_stop: 85, footpath: 80 },
+  },
+  hotspotsouth: {
+    name: 'South Sector',
+    bounds: [
+      [17.4444337, 78.3786482],
+      [17.4464, 78.3860746],
+    ],
+    fallback: { safetyScore: 82, school: 85, hospital: 90, park: 80, bus_stop: 75, footpath: 80 },
+  },
+  hotspoteast: {
+    name: 'East Corridor',
+    bounds: [
+      [17.4464, 78.3842],
+      [17.4484, 78.3860746],
+    ],
+    fallback: { safetyScore: 65, school: 60, hospital: 55, park: 65, bus_stop: 75, footpath: 70 },
+  },
+  hotspotwest: {
+    name: 'West Corridor',
+    bounds: [
+      [17.4464, 78.3786482],
+      [17.4484, 78.3805],
+    ],
+    fallback: { safetyScore: 56, school: 50, hospital: 45, park: 60, bus_stop: 65, footpath: 60 },
+  },
 }
 
 router.get('/:name', async (req, res) => {
   try {
-    const name = req.params.name.toLowerCase().replace(/\s+/g, '')
+    const name = req.params.name.toLowerCase().replace(/[\s-]+/g, '')
     const area = AREAS[name]
     if (!area) {
       res
@@ -22,60 +71,65 @@ router.get('/:name', async (req, res) => {
       return
     }
 
-    const { lat, lng } = area
+    const [[minLat, minLng], [maxLat, maxLng]] = area.bounds
 
-    // Query segments whose centroid is within approx. ±0.015 degrees lat/lng (~1.5km box)
+    // Query segments whose centroid falls within the specific bounding box
     const segments = await prisma.$queryRaw<any[]>`
-      SELECT *
+      SELECT id, school, hospital, park, bus_stop, footpath, safety_score, active_reports
       FROM road_segments
       WHERE
-        ((bbox->>'minLng')::float + (bbox->>'maxLng')::float) / 2.0 BETWEEN ${lng - 0.015} AND ${lng + 0.015}
-        AND ((bbox->>'minLat')::float + (bbox->>'maxLat')::float) / 2.0 BETWEEN ${lat - 0.015} AND ${lat + 0.015}
+        ((bbox->>'minLng')::float + (bbox->>'maxLng')::float) / 2.0 BETWEEN ${minLng} AND ${maxLng}
+        AND ((bbox->>'minLat')::float + (bbox->>'maxLat')::float) / 2.0 BETWEEN ${minLat} AND ${maxLat}
     `
 
-    if (segments.length === 0) {
+    if (!segments || segments.length === 0) {
+      // Return static fallback metrics
       res.json({
         name: area.name,
-        safetyScore: 0.78,
-        lightingScore: 0.82,
-        floodRisk: 0.15,
-        surfaceQuality: 0.76,
-        walkabilityScore: 0.7,
+        safetyScore: area.fallback.safetyScore / 100,
+        school: area.fallback.school / 100,
+        hospital: area.fallback.hospital / 100,
+        park: area.fallback.park / 100,
+        bus_stop: area.fallback.bus_stop / 100,
+        footpath: area.fallback.footpath / 100,
         activeReports: 0,
         trend: 'stable',
         reportedDarkSpots: 0,
         floodProneCount: 0,
         potholeDensity: 0,
-        sidewalkCoverage: 0.75,
+        sidewalkCoverage: area.fallback.footpath / 100,
         pedestrianFriendliness: 'Good',
         crossingAvailability: 'Average',
-        maintenanceHistory: 'Regular GHMC sweeping; last resurfaced in 2025.',
+        maintenanceHistory: 'Standard municipal monitoring.',
       })
       return
     }
 
     const count = segments.length
     let totalSafety = 0
-    let totalLighting = 0
-    let totalFloodRisk = 0
-    let totalSurface = 0
-    let totalWalkability = 0
+    let totalSchool = 0
+    let totalHospital = 0
+    let totalPark = 0
+    let totalBusStop = 0
+    let totalFootpath = 0
     let totalActiveReports = 0
 
     for (const seg of segments) {
-      totalSafety += seg.safety_score
-      totalLighting += seg.lighting_score
-      totalFloodRisk += seg.flood_risk
-      totalSurface += seg.surface_quality
-      totalWalkability += seg.walkability_score
-      totalActiveReports += seg.active_reports
+      totalSafety += Number(seg.safety_score ?? 0)
+      totalSchool += Number(seg.school ?? 0)
+      totalHospital += Number(seg.hospital ?? 0)
+      totalPark += Number(seg.park ?? 0)
+      totalBusStop += Number(seg.bus_stop ?? 0)
+      totalFootpath += Number(seg.footpath ?? 0)
+      totalActiveReports += Number(seg.active_reports ?? 0)
     }
 
     const avgSafety = totalSafety / count
-    const avgLighting = totalLighting / count
-    const avgFloodRisk = totalFloodRisk / count
-    const avgSurface = totalSurface / count
-    const avgWalkability = totalWalkability / count
+    const avgSchool = totalSchool / count
+    const avgHospital = totalHospital / count
+    const avgPark = totalPark / count
+    const avgBusStop = totalBusStop / count
+    const avgFootpath = totalFootpath / count
 
     // Get active reports for these segments
     const segmentIds = segments.map((s) => s.id)
@@ -96,27 +150,26 @@ router.get('/:name', async (req, res) => {
     let trend = 'stable'
     if (recentReportsCount > 0) {
       trend = 'deteriorating'
-    } else if (avgSafety >= 0.75) {
+    } else if (avgSafety >= 75) {
       trend = 'improving'
     }
 
     res.json({
       name: area.name,
-      safetyScore: avgSafety,
-      lightingScore: avgLighting,
-      floodRisk: avgFloodRisk,
-      surfaceQuality: avgSurface,
-      walkabilityScore: avgWalkability,
+      safetyScore: avgSafety / 100,
+      school: avgSchool / 100,
+      hospital: avgHospital / 100,
+      park: avgPark / 100,
+      bus_stop: avgBusStop / 100,
+      footpath: avgFootpath / 100,
       activeReports: totalActiveReports,
       trend,
       reportedDarkSpots: darkSpots,
       floodProneCount: waterlogging,
       potholeDensity: potholes,
-      sidewalkCoverage: avgWalkability,
-      pedestrianFriendliness:
-        avgWalkability >= 0.75 ? 'Excellent' : avgWalkability >= 0.45 ? 'Good' : 'Poor',
-      crossingAvailability:
-        avgWalkability >= 0.75 ? 'High' : avgWalkability >= 0.45 ? 'Average' : 'Low',
+      sidewalkCoverage: avgFootpath / 100,
+      pedestrianFriendliness: avgFootpath >= 75 ? 'Excellent' : avgFootpath >= 45 ? 'Good' : 'Poor',
+      crossingAvailability: avgFootpath >= 75 ? 'High' : avgFootpath >= 45 ? 'Average' : 'Low',
       maintenanceHistory:
         potholes > 2
           ? 'Needs immediate attention; multiple potholes reported.'

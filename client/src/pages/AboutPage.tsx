@@ -1,4 +1,4 @@
-import { Trans, useTranslation } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 import Navbar from '../components/navigation/Navbar.js'
 
 export default function AboutPage() {
@@ -6,34 +6,34 @@ export default function AboutPage() {
 
   const formulaWeights = [
     {
-      name: t('about.model.lighting.name'),
-      weight: 30,
-      color: 'bg-blue-500',
-      desc: t('about.model.lighting.desc'),
-    },
-    {
-      name: t('about.model.accident.name'),
+      name: 'School Proximity',
       weight: 25,
-      color: 'bg-green-500',
-      desc: t('about.model.accident.desc'),
+      color: 'bg-blue-500',
+      desc: 'Proximity index to educational institutions within the neighborhood.',
     },
     {
-      name: t('about.model.flood.name'),
+      name: 'Hospital Proximity',
+      weight: 25,
+      color: 'bg-emerald-500',
+      desc: 'Proximity to clinics, emergency rooms, and medical centers.',
+    },
+    {
+      name: 'Park Proximity',
       weight: 20,
       color: 'bg-teal-500',
-      desc: t('about.model.flood.desc'),
+      desc: 'Access to parks, playgrounds, and recreational public spaces.',
     },
     {
-      name: t('about.model.surface.name'),
+      name: 'Bus Stop Proximity',
       weight: 15,
       color: 'bg-amber-500',
-      desc: t('about.model.surface.desc'),
+      desc: 'Convenient proximity to public transit stops and transit terminals.',
     },
     {
-      name: t('about.model.walkability.name'),
-      weight: 10,
+      name: 'Footpath Presence',
+      weight: 15,
       color: 'bg-indigo-500',
-      desc: t('about.model.walkability.desc'),
+      desc: 'Coverage density of paved pedestrian sidewalks and dedicated footways.',
     },
   ]
 
@@ -41,111 +41,131 @@ export default function AboutPage() {
     <div className="min-h-screen flex flex-col bg-[#0a0f1a] text-white font-sans">
       <Navbar />
 
-      <main className="max-w-4xl mx-auto px-6 py-16 flex-1 space-y-12 w-full">
+      <main className="max-w-4xl mx-auto px-6 py-12 flex-1 space-y-10 w-full">
         {/* Header */}
-        <div className="space-y-4">
+        <div className="text-center space-y-3">
           <div className="text-xs font-bold text-[#f59e0b] uppercase tracking-widest">
-            {t('about.preTitle')}
+            Swecha Hackathon 2026
           </div>
-          <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tight">
-            {t('about.title')}
+          <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tight">
+            About StreetCheck
           </h1>
-          <p className="text-base text-gray-400 leading-relaxed">{t('about.desc')}</p>
+          <p className="text-sm text-gray-400 max-w-2xl mx-auto leading-relaxed">
+            StreetCheck is Hyderabad's civic safety intelligence platform. Built on the Swecha
+            OpenStreetMap (OSM) dataset, it evaluates city neighborhoods across 5 core
+            infrastructure indicators to help citizens plan safer, smarter routes.
+          </p>
         </div>
 
-        {/* Scoring Model Visualized */}
-        <section className="bg-[#111827] border border-[#1f2937] rounded-3xl p-8 space-y-8">
+        {/* Scoring Model Details */}
+        <section className="bg-[#111827] border border-[#1f2937] rounded-2xl p-6 md:p-8 space-y-6">
           <div>
-            <h2 className="text-lg font-black uppercase text-[#f59e0b] tracking-wider">
-              {t('about.model.title')}
+            <h2 className="text-base font-black uppercase text-[#f59e0b] tracking-wider">
+              Safety Scoring Model (v3)
             </h2>
-            <p className="text-xs text-gray-400 mt-1">{t('about.model.desc')}</p>
+            <p className="text-xs text-gray-400 mt-1">
+              Every road segment and hotspot safety score is computed using the following locked
+              weights:
+            </p>
           </div>
 
-          <div className="space-y-5">
-            {formulaWeights.map((w, i) => (
-              <div key={i} className="space-y-2">
-                <div className="flex justify-between items-baseline text-xs">
-                  <div className="font-extrabold text-white uppercase tracking-wide">{w.name}</div>
-                  <div className="font-mono font-bold text-[#f59e0b]">
-                    {t('about.model.weight', { weight: w.weight })}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Visual Sliders */}
+            <div className="space-y-4">
+              {formulaWeights.map((w, i) => (
+                <div key={i} className="space-y-1.5">
+                  <div className="flex justify-between items-baseline text-xs">
+                    <span className="font-extrabold text-gray-200">{w.name}</span>
+                    <span className="font-mono font-bold text-[#f59e0b]">{w.weight}%</span>
+                  </div>
+                  <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full ${w.color} transition-all duration-1000`}
+                      style={{ width: `${w.weight}%` }}
+                    />
                   </div>
                 </div>
-                <div className="h-3 bg-gray-800 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full ${w.color} transition-all duration-1000`}
-                    style={{ width: `${w.weight}%` }}
-                  />
+              ))}
+            </div>
+
+            {/* Description list */}
+            <div className="space-y-3 justify-center flex flex-col">
+              {formulaWeights.map((w, i) => (
+                <div key={i} className="text-xs">
+                  <span className="font-bold text-white block">{w.name}</span>
+                  <span className="text-[11px] text-gray-400">{w.desc}</span>
                 </div>
-                <p className="text-[10px] text-gray-500">{w.desc}</p>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
-          <div className="border-t border-[#1f2937] pt-6 flex items-center justify-between text-[10px] font-mono text-gray-500">
-            <span>{t('about.model.formulaLock')}</span>
-            <span className="text-[#f59e0b]">
-              safety_score = 0.3L + 0.25A + 0.20F + 0.15S + 0.1W
+          {/* Formula banner */}
+          <div className="border-t border-[#1f2937] pt-4 flex flex-col sm:flex-row items-center justify-between text-[10px] font-mono text-gray-500 gap-2">
+            <span>Formula Lock: SCORING_VERSION v3</span>
+            <span className="text-[#f59e0b] font-bold text-xs bg-gray-900/60 px-3 py-1.5 rounded-lg border border-[#1f2937]">
+              safety_score = 0.25 × School + 0.25 × Hospital + 0.20 × Park + 0.15 × BusStop + 0.15 ×
+              Footpath
             </span>
           </div>
         </section>
 
-        {/* Data Sources */}
-        <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="bg-[#111827] border border-[#1f2937] rounded-3xl p-8 space-y-4">
-            <h3 className="text-base font-black uppercase text-white tracking-wide">
-              {t('about.sources.title')}
+        {/* Data & Constitutional Guidelines */}
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-[#111827] border border-[#1f2937] rounded-2xl p-6 space-y-3">
+            <h3 className="text-sm font-black uppercase text-white tracking-wide">
+              Municipal Data Sources
             </h3>
-            <ul className="space-y-3 text-xs text-gray-400 list-disc pl-4 leading-relaxed">
+            <ul className="space-y-2 text-xs text-gray-400 list-disc pl-4 leading-relaxed">
               <li>
-                <strong className="text-white">OpenStreetMap:</strong> {t('about.sources.osm')}
+                <strong className="text-white">OpenStreetMap (Swecha):</strong> Base road networks,
+                nodes, and transit infrastructure tags.
               </li>
               <li>
-                <strong className="text-white">HYDRAA:</strong> {t('about.sources.hydraa')}
+                <strong className="text-white">HYDRAA:</strong> Low-lying waterlogging records &
+                drainage safety logs.
               </li>
               <li>
-                <strong className="text-white">MoRTH:</strong> {t('about.sources.morth')}
+                <strong className="text-white">MoRTH:</strong> Historical accident spot statistics.
               </li>
               <li>
-                <strong className="text-white">Telangana Open Data Portal:</strong>{' '}
-                {t('about.sources.tgPortal')}
+                <strong className="text-white">Telangana Open Data Portal:</strong> Ward boundaries
+                & green spaces metadata.
               </li>
             </ul>
           </div>
 
-          <div className="bg-[#111827] border border-[#1f2937] rounded-3xl p-8 space-y-4">
-            <h3 className="text-base font-black uppercase text-white tracking-wide">
-              {t('about.safety.title')}
+          <div className="bg-[#111827] border border-[#1f2937] rounded-2xl p-6 space-y-3">
+            <h3 className="text-sm font-black uppercase text-white tracking-wide text-rose-500">
+              Constitutional Guidelines
             </h3>
-            <div className="space-y-3 text-xs text-gray-400 leading-relaxed">
-              <div className="p-3.5 rounded-xl bg-[#ef4444]/5 border border-[#ef4444]/20 text-gray-400 space-y-2">
-                <p className="font-extrabold uppercase text-[#ef4444] text-[10px] tracking-wider">
-                  ⚠️ {t('about.safety.nonNegotiable')}
+            <div className="space-y-2 text-xs text-gray-400 leading-relaxed">
+              <div className="p-3 rounded-lg bg-rose-500/5 border border-rose-500/20 space-y-1">
+                <p className="font-extrabold uppercase text-rose-500 text-[9px] tracking-wider">
+                  ⚠️ Safety Exclusion Principles
                 </p>
                 <p className="text-[11px]">
-                  <strong>{t('about.safety.noCrimeTitle')}</strong> {t('about.safety.noCrimeDesc')}
+                  <strong>No Crime/Policing Data:</strong> StreetCheck does not record, use, or
+                  display policing records, crime stats, or demographic indicators.
                 </p>
                 <p className="text-[11px]">
-                  <strong>{t('about.safety.anonTitle')}</strong> {t('about.safety.anonDesc')}
+                  <strong>100% Anonymous Reporting:</strong> Citizen hazard reporting is fully
+                  anonymous and PII-free; tokens are generated locally and stored on the device.
                 </p>
               </div>
-              <p>{t('about.safety.exclusionNotes')}</p>
             </div>
           </div>
         </section>
 
-        {/* Built With */}
-        <section className="text-center text-xs text-gray-500 border-t border-[#1f2937] pt-8 space-y-2">
+        {/* Footer */}
+        <section className="text-center text-xs text-gray-600 border-t border-[#1f2937] pt-6">
           <div>
-            <Trans i18nKey="about.footer.builtWith">
-              Built with <strong className="text-white">React 18</strong> ·{' '}
-              <strong className="text-white">Vite</strong> ·{' '}
-              <strong className="text-white">Tailwind CSS</strong> ·{' '}
-              <strong className="text-white">PostGIS</strong> ·{' '}
-              <strong className="text-white">Claude AI</strong>
-            </Trans>
+            Built with <strong className="text-gray-400">React 18</strong> ·{' '}
+            <strong className="text-gray-400">Vite</strong> ·{' '}
+            <strong className="text-gray-400">Tailwind CSS</strong> ·{' '}
+            <strong className="text-gray-400">PostGIS</strong> ·{' '}
+            <strong className="text-gray-400">Claude AI</strong>
           </div>
-          <div>{t('about.footer.inspiration')}</div>
+          <div className="mt-1">Designed for public safety and civic awareness.</div>
         </section>
       </main>
     </div>

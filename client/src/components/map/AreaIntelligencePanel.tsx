@@ -2,15 +2,16 @@ import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useMapStore } from '../../store/mapStore.js'
 
-type TabType = 'overview' | 'lighting' | 'flood' | 'surface' | 'walkability'
+type TabType = 'overview' | 'school' | 'hospital' | 'park' | 'bus_stop' | 'footpath'
 
 interface AreaDetails {
   name: string
   safetyScore: number
-  lightingScore: number
-  floodRisk: number
-  surfaceQuality: number
-  walkabilityScore: number
+  school: number
+  hospital: number
+  park: number
+  bus_stop: number
+  footpath: number
   activeReports: number
   trend: 'improving' | 'deteriorating' | 'stable'
   reportedDarkSpots: number
@@ -35,7 +36,6 @@ export function AreaIntelligencePanel() {
     queryKey: ['areaDetails', selectedAreaName],
     queryFn: async () => {
       if (!selectedAreaName) return null as any
-      // Call standard fetch from backend
       const res = await fetch(`/api/areas/${selectedAreaName}`)
       if (!res.ok) throw new Error('Failed to fetch area data')
       return res.json()
@@ -53,16 +53,32 @@ export function AreaIntelligencePanel() {
     return <span className="text-amber-500 font-extrabold">→ Stable</span>
   }
 
+  // Get display name of zone
+  const getAreaDisplayName = (key: string) => {
+    switch (key) {
+      case 'hotspot-north':
+        return 'North Sector'
+      case 'hotspot-central':
+        return 'Central Hotspot'
+      case 'hotspot-south':
+        return 'South Sector'
+      case 'hotspot-east':
+        return 'East Corridor'
+      case 'hotspot-west':
+        return 'West Corridor'
+      default:
+        return key.replace('-', ' ')
+    }
+  }
+
   return (
     <div className="flex flex-col h-full bg-[#111827] border-l border-[#1f2937] text-white shadow-2xl relative w-full md:w-[360px] flex-shrink-0 animate-in slide-in-from-right duration-300">
       {/* Panel Header */}
       <div className="p-5 border-b border-[#1f2937] flex items-center justify-between bg-[#0a0f1a]">
         <div>
-          <h2 className="text-lg font-black uppercase tracking-wider text-[#f59e0b]">
-            Area Intelligence
-          </h2>
+          <h2 className="text-lg font-black uppercase tracking-wider text-[#f59e0b]">Area Intel</h2>
           <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-0.5">
-            {isLoading ? 'Loading...' : area?.name || selectedAreaName}
+            {isLoading ? 'Loading...' : area?.name || getAreaDisplayName(selectedAreaName)}
           </p>
         </div>
         <button
@@ -119,7 +135,7 @@ export function AreaIntelligencePanel() {
 
           {/* Navigation Tabs */}
           <div className="px-4 border-b border-[#1f2937] flex gap-1 overflow-x-auto scrollbar-none bg-[#0a0f1a]/50">
-            {(['overview', 'lighting', 'flood', 'surface', 'walkability'] as TabType[]).map(
+            {(['overview', 'school', 'hospital', 'park', 'bus_stop', 'footpath'] as TabType[]).map(
               (tab) => (
                 <button
                   key={tab}
@@ -131,7 +147,11 @@ export function AreaIntelligencePanel() {
                   }`}
                   type="button"
                 >
-                  {tab}
+                  {tab === 'bus_stop'
+                    ? 'Bus Stop'
+                    : tab === 'overview'
+                      ? 'Overview'
+                      : tab.charAt(0).toUpperCase() + tab.slice(1)}
                 </button>
               )
             )}
@@ -143,39 +163,47 @@ export function AreaIntelligencePanel() {
               <div className="space-y-6">
                 <div className="space-y-3">
                   <h3 className="text-xs font-black uppercase text-gray-400 tracking-wider">
-                    Quick Metrics
+                    Scoring Breakdown
                   </h3>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="bg-[#1f2937]/40 border border-[#1f2937] rounded-xl p-3.5 flex flex-col gap-1">
                       <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">
-                        Lighting
+                        School Proximity
                       </span>
-                      <span className="text-lg font-extrabold">
-                        {Math.round(area.lightingScore * 100)}%
-                      </span>
-                    </div>
-                    <div className="bg-[#1f2937]/40 border border-[#1f2937] rounded-xl p-3.5 flex flex-col gap-1">
-                      <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">
-                        Flood Safety
-                      </span>
-                      <span className="text-lg font-extrabold">
-                        {Math.round((1 - area.floodRisk) * 100)}%
+                      <span className="text-lg font-extrabold text-blue-400">
+                        {Math.round(area.school * 100)}%
                       </span>
                     </div>
                     <div className="bg-[#1f2937]/40 border border-[#1f2937] rounded-xl p-3.5 flex flex-col gap-1">
                       <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">
-                        Surface Quality
+                        Hospital Proximity
                       </span>
-                      <span className="text-lg font-extrabold">
-                        {Math.round(area.surfaceQuality * 100)}%
+                      <span className="text-lg font-extrabold text-emerald-400">
+                        {Math.round(area.hospital * 100)}%
                       </span>
                     </div>
                     <div className="bg-[#1f2937]/40 border border-[#1f2937] rounded-xl p-3.5 flex flex-col gap-1">
                       <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">
-                        Walkability
+                        Park Proximity
                       </span>
-                      <span className="text-lg font-extrabold">
-                        {Math.round(area.walkabilityScore * 100)}%
+                      <span className="text-lg font-extrabold text-teal-400">
+                        {Math.round(area.park * 100)}%
+                      </span>
+                    </div>
+                    <div className="bg-[#1f2937]/40 border border-[#1f2937] rounded-xl p-3.5 flex flex-col gap-1">
+                      <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">
+                        Bus Stop
+                      </span>
+                      <span className="text-lg font-extrabold text-amber-400">
+                        {Math.round(area.bus_stop * 100)}%
+                      </span>
+                    </div>
+                    <div className="bg-[#1f2937]/40 border border-[#1f2937] rounded-xl p-3.5 flex flex-col gap-1 col-span-2">
+                      <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">
+                        Footpath Presence
+                      </span>
+                      <span className="text-lg font-extrabold text-indigo-400">
+                        {Math.round(area.footpath * 100)}%
                       </span>
                     </div>
                   </div>
@@ -183,72 +211,28 @@ export function AreaIntelligencePanel() {
 
                 <div className="bg-[#1f2937]/30 border border-[#1f2937] rounded-xl p-4 space-y-2.5">
                   <h4 className="text-xs font-black uppercase tracking-wider text-[#f59e0b]">
-                    Area Overview
+                    Area Summary
                   </h4>
                   <p className="text-xs text-gray-400 leading-relaxed">
                     This analysis is compiled from street segments in {area.name}. The safety rating
-                    represents lighting coverage, flood risk maps, and user reports. Active reports
-                    currently stand at {area.activeReports} active citizen complaints.
+                    represents safety proximity indicators calculated from verified Swecha OSM
+                    dataset layers. Active reports currently stand at {area.activeReports} active
+                    citizen complaints.
                   </p>
                 </div>
               </div>
             )}
 
-            {activeTab === 'lighting' && (
+            {activeTab === 'school' && (
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <div className="text-3xl">💡</div>
+                  <div className="text-3xl">🏫</div>
                   <div>
                     <h3 className="text-xs font-black uppercase tracking-wider">
-                      Lighting Infrastructure
-                    </h3>
-                    <p className="text-[10px] text-gray-500">Streetlight density and outage maps</p>
-                  </div>
-                </div>
-
-                <div className="border-t border-[#1f2937] pt-4 space-y-4">
-                  <div className="flex justify-between items-center bg-[#1f2937]/35 p-3.5 rounded-xl border border-[#1f2937]">
-                    <span className="text-[10px] font-bold uppercase text-gray-400">
-                      Reported Dark Spots
-                    </span>
-                    <span className="text-sm font-black text-rose-500">
-                      {area.reportedDarkSpots} active
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between items-center bg-[#1f2937]/35 p-3.5 rounded-xl border border-[#1f2937]">
-                    <span className="text-[10px] font-bold uppercase text-gray-400">
-                      Streetlight Density
-                    </span>
-                    <span className="text-sm font-black text-[#f59e0b]">
-                      {Math.round(area.lightingScore * 100)}% coverage
-                    </span>
-                  </div>
-
-                  <div className="p-4 bg-[#1f2937]/20 border border-[#1f2937] rounded-xl space-y-1.5">
-                    <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">
-                      Citizen Feedback
-                    </span>
-                    <p className="text-xs text-gray-400 leading-relaxed">
-                      {area.reportedDarkSpots > 0
-                        ? 'Multiple unlit stretches reported. Commuters are advised to exercise caution after dusk.'
-                        : 'No recent streetlight outages reported. Lighting infrastructure remains stable.'}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'flood' && (
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="text-3xl">🌊</div>
-                  <div>
-                    <h3 className="text-xs font-black uppercase tracking-wider">
-                      Flood Vulnerability
+                      School Proximity
                     </h3>
                     <p className="text-[10px] text-gray-500">
-                      Monsoon waterlogging & low-lying zones
+                      Access and proximity to educational zones
                     </p>
                   </div>
                 </div>
@@ -256,104 +240,162 @@ export function AreaIntelligencePanel() {
                 <div className="border-t border-[#1f2937] pt-4 space-y-4">
                   <div className="flex justify-between items-center bg-[#1f2937]/35 p-3.5 rounded-xl border border-[#1f2937]">
                     <span className="text-[10px] font-bold uppercase text-gray-400">
-                      Waterlogging Hotspots
+                      Indicator Score
                     </span>
-                    <span className="text-sm font-black text-rose-500">
-                      {area.floodProneCount} active
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between items-center bg-[#1f2937]/35 p-3.5 rounded-xl border border-[#1f2937]">
-                    <span className="text-[10px] font-bold uppercase text-gray-400">
-                      Flood Risk Index
-                    </span>
-                    <span className="text-sm font-black text-amber-500">
-                      {Math.round(area.floodRisk * 100)}% vulnerability
+                    <span className="text-sm font-black text-blue-400">
+                      {Math.round(area.school * 100)}%
                     </span>
                   </div>
 
                   <div className="p-4 bg-[#1f2937]/20 border border-[#1f2937] rounded-xl space-y-1.5">
                     <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">
-                      Disaster Risk Summary
+                      Assessment
                     </span>
                     <p className="text-xs text-gray-400 leading-relaxed">
-                      {area.floodRisk > 0.4
-                        ? 'Low-lying geography makes this region susceptible to waterlogging during heavy downpours. Avoid underpasses.'
-                        : 'Low flood vulnerability mapped. Primary storm drains are functional.'}
+                      {area.school >= 0.75
+                        ? 'High density of educational infrastructure. Road zones should strictly enforce school zone speed limits and zebra crossing presence.'
+                        : 'Moderate or low proximity to schools. Standard arterial safety rules apply.'}
                     </p>
                   </div>
                 </div>
               </div>
             )}
 
-            {activeTab === 'surface' && (
+            {activeTab === 'hospital' && (
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <div className="text-3xl">🛣️</div>
+                  <div className="text-3xl">🏥</div>
                   <div>
                     <h3 className="text-xs font-black uppercase tracking-wider">
-                      Road Surface Condition
+                      Hospital Proximity
                     </h3>
-                    <p className="text-[10px] text-gray-500">Potholes & maintenance quality</p>
+                    <p className="text-[10px] text-gray-500">
+                      Access to emergency medical facilities
+                    </p>
                   </div>
                 </div>
 
                 <div className="border-t border-[#1f2937] pt-4 space-y-4">
                   <div className="flex justify-between items-center bg-[#1f2937]/35 p-3.5 rounded-xl border border-[#1f2937]">
                     <span className="text-[10px] font-bold uppercase text-gray-400">
-                      Active Potholes
+                      Indicator Score
                     </span>
-                    <span className="text-sm font-black text-rose-500">
-                      {area.potholeDensity} reported
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between items-center bg-[#1f2937]/35 p-3.5 rounded-xl border border-[#1f2937]">
-                    <span className="text-[10px] font-bold uppercase text-gray-400">
-                      Quality Score
-                    </span>
-                    <span className="text-sm font-black text-emerald-500">
-                      {Math.round(area.surfaceQuality * 100)}% excellent
+                    <span className="text-sm font-black text-emerald-400">
+                      {Math.round(area.hospital * 100)}%
                     </span>
                   </div>
 
                   <div className="p-4 bg-[#1f2937]/20 border border-[#1f2937] rounded-xl space-y-1.5">
                     <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">
-                      Maintenance History
+                      Assessment
                     </span>
                     <p className="text-xs text-gray-400 leading-relaxed">
-                      {area.maintenanceHistory}
+                      {area.hospital >= 0.75
+                        ? 'Excellent proximity to healthcare centers. Traffic corridors are critical for emergency vehicles. Silent zones should be respected.'
+                        : 'Moderate proximity to health centers. Standard route safety priority.'}
                     </p>
                   </div>
                 </div>
               </div>
             )}
 
-            {activeTab === 'walkability' && (
+            {activeTab === 'park' && (
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="text-3xl">🌳</div>
+                  <div>
+                    <h3 className="text-xs font-black uppercase tracking-wider">Park Proximity</h3>
+                    <p className="text-[10px] text-gray-500">Proximity to green public spaces</p>
+                  </div>
+                </div>
+
+                <div className="border-t border-[#1f2937] pt-4 space-y-4">
+                  <div className="flex justify-between items-center bg-[#1f2937]/35 p-3.5 rounded-xl border border-[#1f2937]">
+                    <span className="text-[10px] font-bold uppercase text-gray-400">
+                      Indicator Score
+                    </span>
+                    <span className="text-sm font-black text-teal-400">
+                      {Math.round(area.park * 100)}%
+                    </span>
+                  </div>
+
+                  <div className="p-4 bg-[#1f2937]/20 border border-[#1f2937] rounded-xl space-y-1.5">
+                    <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">
+                      Assessment
+                    </span>
+                    <p className="text-xs text-gray-400 leading-relaxed">
+                      {area.park >= 0.7
+                        ? 'High proximity to urban green spaces. Pedestrian safety and active transport paths are highly recommended in this zone.'
+                        : 'Moderate proximity to recreational spaces.'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'bus_stop' && (
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="text-3xl">🚌</div>
+                  <div>
+                    <h3 className="text-xs font-black uppercase tracking-wider">
+                      Bus Stop Proximity
+                    </h3>
+                    <p className="text-[10px] text-gray-500">Access to public transit options</p>
+                  </div>
+                </div>
+
+                <div className="border-t border-[#1f2937] pt-4 space-y-4">
+                  <div className="flex justify-between items-center bg-[#1f2937]/35 p-3.5 rounded-xl border border-[#1f2937]">
+                    <span className="text-[10px] font-bold uppercase text-gray-400">
+                      Indicator Score
+                    </span>
+                    <span className="text-sm font-black text-amber-500">
+                      {Math.round(area.bus_stop * 100)}%
+                    </span>
+                  </div>
+
+                  <div className="p-4 bg-[#1f2937]/20 border border-[#1f2937] rounded-xl space-y-1.5">
+                    <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">
+                      Transit Assessment
+                    </span>
+                    <p className="text-xs text-gray-400 leading-relaxed">
+                      {area.bus_stop >= 0.7
+                        ? 'High density of public transit points. Frequent foot traffic, requiring safe road-crossing corridors and adequate pavement illumination.'
+                        : 'Transit options are spread out. Commute times to public transport might be longer.'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'footpath' && (
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
                   <div className="text-3xl">🚶</div>
                   <div>
                     <h3 className="text-xs font-black uppercase tracking-wider">
-                      Pedestrian Accessibility
+                      Footpath Presence
                     </h3>
-                    <p className="text-[10px] text-gray-500">Footpaths & walkability scores</p>
+                    <p className="text-[10px] text-gray-500">
+                      Dedicated walking lanes & sidewalk coverage
+                    </p>
                   </div>
                 </div>
 
                 <div className="border-t border-[#1f2937] pt-4 space-y-4">
                   <div className="flex justify-between items-center bg-[#1f2937]/35 p-3.5 rounded-xl border border-[#1f2937]">
                     <span className="text-[10px] font-bold uppercase text-gray-400">
-                      Sidewalk Coverage
+                      Pavement Mapped
                     </span>
-                    <span className="text-sm font-black text-[#f59e0b]">
-                      {Math.round(area.sidewalkCoverage * 100)}% mapped
+                    <span className="text-sm font-black text-indigo-400">
+                      {Math.round(area.footpath * 100)}% coverage
                     </span>
                   </div>
 
                   <div className="flex justify-between items-center bg-[#1f2937]/35 p-3.5 rounded-xl border border-[#1f2937]">
                     <span className="text-[10px] font-bold uppercase text-gray-400">
-                      Pedestrian Friendliness
+                      Accessibility Level
                     </span>
                     <span className="text-sm font-black text-emerald-500">
                       {area.pedestrianFriendliness}
@@ -362,7 +404,7 @@ export function AreaIntelligencePanel() {
 
                   <div className="flex justify-between items-center bg-[#1f2937]/35 p-3.5 rounded-xl border border-[#1f2937]">
                     <span className="text-[10px] font-bold uppercase text-gray-400">
-                      Crossing Availability
+                      Crossing Points
                     </span>
                     <span className="text-sm font-black text-emerald-500">
                       {area.crossingAvailability}

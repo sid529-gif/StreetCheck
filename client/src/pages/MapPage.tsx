@@ -2,10 +2,10 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-  Circle,
   CircleMarker,
   MapContainer,
   Polyline,
+  Rectangle,
   TileLayer,
   Tooltip,
   useMap,
@@ -79,13 +79,53 @@ function MapController({
   return null
 }
 
-// Hotspot locations within the restricted bounding box
+// Hotspot grid locations dividing the QGIS bounds
 const NEIGHBORHOOD_AREAS = [
-  { key: 'hotspot-north', lat: 17.4498, lng: 78.382, name: 'North Sector' },
-  { key: 'hotspot-central', lat: 17.4474, lng: 78.3824, name: 'Central Hotspot' },
-  { key: 'hotspot-south', lat: 17.4452, lng: 78.3828, name: 'South Sector' },
-  { key: 'hotspot-east', lat: 17.4474, lng: 78.385, name: 'East Corridor' },
-  { key: 'hotspot-west', lat: 17.4474, lng: 78.3798, name: 'West Corridor' },
+  {
+    key: 'hotspot-north',
+    bounds: [
+      [17.4484, 78.3786482],
+      [17.4503845, 78.3860746],
+    ] as [[number, number], [number, number]],
+    color: '#ef4444',
+    name: 'North Sector',
+  },
+  {
+    key: 'hotspot-west',
+    bounds: [
+      [17.4464, 78.3786482],
+      [17.4484, 78.3805],
+    ] as [[number, number], [number, number]],
+    color: '#f97316',
+    name: 'West Corridor',
+  },
+  {
+    key: 'hotspot-central',
+    bounds: [
+      [17.4464, 78.3805],
+      [17.4484, 78.3842],
+    ] as [[number, number], [number, number]],
+    color: '#eab308',
+    name: 'Central Hotspot',
+  },
+  {
+    key: 'hotspot-east',
+    bounds: [
+      [17.4464, 78.3842],
+      [17.4484, 78.3860746],
+    ] as [[number, number], [number, number]],
+    color: '#d97706',
+    name: 'East Corridor',
+  },
+  {
+    key: 'hotspot-south',
+    bounds: [
+      [17.4444337, 78.3786482],
+      [17.4464, 78.3860746],
+    ] as [[number, number], [number, number]],
+    color: '#0d9488',
+    name: 'South Sector',
+  },
 ]
 
 export default function MapPage() {
@@ -247,15 +287,14 @@ export default function MapPage() {
             <ReportPins />
 
             {NEIGHBORHOOD_AREAS.map((area) => (
-              <Circle
+              <Rectangle
                 key={area.key}
-                center={[area.lat, area.lng]}
-                radius={400}
+                bounds={area.bounds}
                 pathOptions={{
-                  color: selectedAreaName === area.key ? '#f59e0b' : '#3b82f6',
-                  fillColor: selectedAreaName === area.key ? '#f59e0b' : '#3b82f6',
+                  color: selectedAreaName === area.key ? '#f59e0b' : area.color,
+                  fillColor: area.color,
                   fillOpacity: selectedAreaName === area.key ? 0.35 : 0.15,
-                  weight: selectedAreaName === area.key ? 3 : 1.5,
+                  weight: selectedAreaName === area.key ? 3 : 1,
                 }}
                 eventHandlers={{
                   click: () => {
@@ -269,7 +308,7 @@ export default function MapPage() {
                     Click for Area Intelligence
                   </div>
                 </Tooltip>
-              </Circle>
+              </Rectangle>
             ))}
 
             <MapController origin={routeOrigin} destination={routeDestination} />
